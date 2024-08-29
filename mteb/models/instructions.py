@@ -54,6 +54,8 @@ TASKNAME2INSTRUCTIONS = {
     "JDReview": "Classify the customer review for iPhone on e-commerce platform into positive or negative",
     "OnlineShopping": "Classify the customer review for online shopping into positive or negative",
     "Waimai": "Classify the customer review from a food takeaway platform into positive or negative",
+    "RuSciBenchPubTypeClassification": "Classify the type of scientific paper based on the title and abstract",
+    "RuSciBenchCoreRiscClassification": "Classify whether a scientific article is part of the core RISC or not based on the title and abstract",
     # Clustering
     "VGHierarchicalClusteringP2P": "Identify the categories (e.g. sports) of given articles in Norwegian",
     "VGHierarchicalClusteringS2S": "Identify the categories (e.g. sports) of given articles in Norwegian",
@@ -264,6 +266,15 @@ TASKNAME2INSTRUCTIONS = {
         "Given the following sentence, retrieve an appropriate answer to fill in the missing underscored part.",
         "",
     ),
+    "RuSciBenchTranslationSearchRetrieval": (
+        "Given the following title and abstract of the scientific article, find its translation",
+        "",
+    ),
+    "RuSciBenchCiteRetrieval": "Given a title and abstract of a scientific paper, retrieve the titles and abstracts of other relevant papers",
+    "RuSciBenchCociteRetrieval": "Given a title and abstract of a scientific paper, retrieve the titles and abstracts of other relevant papers",
+    # Regression
+    "RuSciBenchYearPublRegression": "Predict paper publitaction year based on the title and abstract",
+    "RuSciBenchCitedCountRegression": "Predict the number of citations for a scientific article based on the title and abstract",
 }
 
 

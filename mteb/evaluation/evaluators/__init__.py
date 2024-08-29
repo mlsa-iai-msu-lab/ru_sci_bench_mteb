@@ -4,6 +4,7 @@ from .BitextMiningEvaluator import *
 from .ClassificationEvaluator import *
 from .ClusteringEvaluator import *
 from .PairClassificationEvaluator import *
+from .RegressionEvaluator import *
 from .RerankingEvaluator import *
 from .RetrievalEvaluator import *
 from .STSEvaluator import *

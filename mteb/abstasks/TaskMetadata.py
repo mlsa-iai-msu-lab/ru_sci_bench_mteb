@@ -76,15 +76,16 @@ SAMPLE_CREATION_METHOD = Literal[
 TASK_TYPE = Literal[
     "BitextMining",
     "Classification",
-    "MultilabelClassification",
     "Clustering",
+    "InstructionRetrieval",
+    "MultilabelClassification",
     "PairClassification",
+    "Regression",
     "Reranking",
     "Retrieval",
+    "Speed",
     "STS",
     "Summarization",
-    "InstructionRetrieval",
-    "Speed",
 ]
 
 TASK_CATEGORY = Literal[

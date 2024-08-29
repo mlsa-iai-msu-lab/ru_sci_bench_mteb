@@ -1,24 +1,28 @@
 from __future__ import annotations
 
+from mteb.abstasks import AbsTaskClassification, MultilingualTask
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
-from ....abstasks import AbsTaskClassification
+_LANGUAGES = {
+    "oecd_ru": ["rus-Cyrl"],
+    "oecd_en": ["eng-Latn"],
+}
 
 
-class RuSciBenchOECDClassification(AbsTaskClassification):
+class RuSciBenchOECDOrigClassification(MultilingualTask, AbsTaskClassification):
     metadata = TaskMetadata(
-        name="RuSciBenchOECDClassification",
+        name="RuSciBenchOECDOrigClassification",
         dataset={
-            "path": "ai-forever/ru-scibench-oecd-classification",
-            "revision": "26c88e99dcaba32bb45d0e1bfc21902337f6d471",
+            "path": "mlsa-iai-msu-lab/ru_sci_bench_mteb",
+            "revision": "fbc0599a0b5f00b3c7d87ab4d13490f04fb77f8e",
         },
         description="Classification of scientific papers (title+abstract) by rubric",
-        reference="https://github.com/mlsa-iai-msu-lab/ru_sci_bench/",
+        reference="https://github.com/mlsa-iai-msu-lab/ru_sci_bench_mteb",
         type="Classification",
         category="p2p",
         modalities=["text"],
         eval_splits=["test"],
-        eval_langs=["rus-Cyrl"],
+        eval_langs=_LANGUAGES,
         main_score="accuracy",
         date=("2007-01-01", "2023-01-01"),
         domains=["Academic", "Non-fiction", "Written"],
@@ -29,12 +33,7 @@ class RuSciBenchOECDClassification(AbsTaskClassification):
         sample_creation="found",
         bibtex_citation="",
         descriptive_stats={
-            "n_samples": {"test": 2048},
-            "avg_character_length": {"test": 838.9},
+            "n_samples": {"test": 3090},
+            "avg_character_length": {"train": 864.26, "test": 860.49},
         },
     )
-
-    def dataset_transform(self):
-        self.dataset = self.stratified_subsampling(
-            self.dataset, seed=self.seed, n_samples=2048, splits=["test"]
-        )

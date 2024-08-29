@@ -24,10 +24,10 @@ class RuSciBenchOECDClusteringP2P(AbsTaskClusteringFast):
         eval_splits=["test"],
         eval_langs=["rus-Cyrl"],
         main_score="v_measure",
-        date=("1999-01-01", "2024-01-01"),
-        domains=["Academic", "Written"],
+        date=("2007-01-01", "2023-01-01"),
+        domains=["Academic", "Non-fiction", "Written"],
         task_subtypes=["Thematic clustering"],
-        license="Not specified",
+        license="MIT",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
@@ -39,9 +39,7 @@ class RuSciBenchOECDClusteringP2P(AbsTaskClusteringFast):
     )
 
     def dataset_transform(self):
-        self.dataset = self.dataset.rename_columns(
-            {"label": "labels", "text": "sentences"}
-        )
+        self.dataset = self.dataset.rename_columns({"label": "labels", "text": "sentences"})
 
         self.dataset = self.stratified_subsampling(
             self.dataset,

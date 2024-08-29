@@ -7,7 +7,7 @@ import logging
 from collections import Counter
 from typing import Dict, Set, Type
 
-from mteb.abstasks import AbsTask
+from mteb.abstasks import AbsLabeledTask, AbsTask
 from mteb.abstasks.TaskMetadata import TASK_CATEGORY, TASK_DOMAIN, TASK_TYPE
 from mteb.languages import (
     ISO_TO_LANGUAGE,
@@ -24,12 +24,15 @@ logger = logging.getLogger(__name__)
 
 
 def create_task_list() -> list[Type[AbsTask]]:
-    tasks_categories_cls = [cls for cls in AbsTask.__subclasses__()]
+    tasks_categories_cls = [
+        cls for cls in AbsTask.__subclasses__() if cls.__name__ != "AbsLabeledTask"
+    ] + AbsLabeledTask.__subclasses__()
     tasks = [
         cls
         for cat_cls in tasks_categories_cls
         for cls in cat_cls.__subclasses__()
         if cat_cls.__name__.startswith("AbsTask")
+        or cat_cls.__name__.startswith("AbsLabeledTask")
     ]
     return tasks
 

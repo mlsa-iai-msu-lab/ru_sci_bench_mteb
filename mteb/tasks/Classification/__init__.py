@@ -89,6 +89,10 @@ from .multilingual.NordicLangClassification import *
 from .multilingual.NusaParagraphEmotionClassification import *
 from .multilingual.NusaParagraphTopicClassification import *
 from .multilingual.NusaXSenti import *
+from .multilingual.RuSciBenchCoreRiscClassification import *
+from .multilingual.RuSciBenchGRNTIOrigClassification import *
+from .multilingual.RuSciBenchOECDOrigClassification import *
+from .multilingual.RuSciBenchPubTypeClassification import *
 from .multilingual.ScalaClassification import *
 from .multilingual.SIB200Classification import *
 from .multilingual.SouthAfricanLangClassification import *
@@ -137,7 +141,7 @@ from .ukr.UkrFormalityClassification import *
 from .urd.UrduRomanSentimentClassification import *
 from .vie.VieStudentFeedbackClassification import *
 from .zho.CMTEBClassification import *
-from .zho.YueOpenriceReviewClassification import (
-    YueOpenriceReviewClassification,  # noqa: F401
+from .zho.YueOpenriceReviewClassification import (  # noqa: F401
+    YueOpenriceReviewClassification,
 )
 from .zul.IsiZuluNewsClassification import *

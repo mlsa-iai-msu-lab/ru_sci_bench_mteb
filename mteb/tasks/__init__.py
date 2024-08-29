@@ -6,6 +6,7 @@ from .Clustering import *
 from .InstructionRetrieval import *
 from .MultiLabelClassification import *
 from .PairClassification import *
+from .Regression import *
 from .Reranking import *
 from .Retrieval import *
 from .SpeedTask import *
