@@ -16,7 +16,7 @@ class BigPatentClustering(AbsTaskClustering):
     metadata = TaskMetadata(
         name="BigPatentClustering",
         description="Clustering of documents from the Big Patent dataset. Test set only includes documents"
-        "belonging to a single category, with a total of 9 categories.",
+        + "belonging to a single category, with a total of 9 categories.",
         reference="https://www.kaggle.com/datasets/big_patent",
         dataset={
             "path": "jinaai/big-patent-clustering",
@@ -52,7 +52,6 @@ class BigPatentClustering(AbsTaskClustering):
   biburl    = {https://dblp.org/rec/journals/corr/abs-1906-03741.bib},
   bibsource = {dblp computer science bibliography, https://dblp.org}
 }""",
-        descriptive_stats={"n_samples": None, "avg_character_length": None},
     )
 
 
@@ -61,7 +60,7 @@ class BigPatentClusteringFast(AbsTaskClusteringFast):
     metadata = TaskMetadata(
         name="BigPatentClustering.v2",
         description="Clustering of documents from the Big Patent dataset. Test set only includes documents"
-        "belonging to a single category, with a total of 9 categories.",
+        + "belonging to a single category, with a total of 9 categories.",
         reference="https://huggingface.co/datasets/NortheasternUniversity/big_patent",
         dataset={
             "path": "mteb/big-patent",
@@ -99,10 +98,7 @@ class BigPatentClusteringFast(AbsTaskClusteringFast):
   biburl    = {https://dblp.org/rec/journals/corr/abs-1906-03741.bib},
   bibsource = {dblp computer science bibliography, https://dblp.org}
 }""",
-        descriptive_stats={
-            "n_samples": {"test": NUM_SAMPLES},
-            "avg_character_length": {"test": 30995.5},
-        },
+        adapted_from=["BigPatentClustering"],
     )
 
     def dataset_transform(self):
@@ -113,5 +109,4 @@ class BigPatentClusteringFast(AbsTaskClusteringFast):
             self.seed,
             self.metadata.eval_splits,
             label="labels",
-            n_samples=NUM_SAMPLES,
         )

@@ -35,26 +35,24 @@ class CLSClusteringFastS2S(AbsTaskClusteringFast):
         date=("2022-01-01", "2022-09-12"),
         domains=["Academic", "Written"],
         task_subtypes=["Thematic clustering", "Topic classification"],
-        license="Apache-2.0",
+        license="apache-2.0",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
         bibtex_citation="""@misc{li2022csl,
-            title={CSL: A Large-scale Chinese Scientific Literature Dataset}, 
+            title={CSL: A Large-scale Chinese Scientific Literature Dataset},
             author={Yudong Li and Yuqing Zhang and Zhe Zhao and Linlin Shen and Weijie Liu and Weiquan Mao and Hui Zhang},
             year={2022},
             eprint={2209.05034},
             archivePrefix={arXiv},
             primaryClass={cs.CL}
         }""",
-        descriptive_stats={
-            "n_samples": {"test": NUM_SAMPLES},
-            "avg_character_length": {},
-        },
+        prompt="Identify the main category of scholar papers based on the titles",
+        adapted_from=["CLSClusteringS2S"],
     )
 
     def dataset_transform(self):
-        ds = dict()
+        ds = {}
         for split in self.metadata.eval_splits:
             labels = list(itertools.chain.from_iterable(self.dataset[split]["labels"]))
             sentences = list(
@@ -70,7 +68,6 @@ class CLSClusteringFastS2S(AbsTaskClusteringFast):
             self.seed,
             self.metadata.eval_splits,
             label="labels",
-            n_samples=NUM_SAMPLES,
         )
 
 
@@ -95,26 +92,24 @@ class CLSClusteringFastP2P(AbsTaskClusteringFast):
         date=("2022-01-01", "2022-09-12"),
         domains=["Academic", "Written"],
         task_subtypes=["Thematic clustering", "Topic classification"],
-        license="Apache-2.0",
+        license="apache-2.0",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
         bibtex_citation="""@misc{li2022csl,
-            title={CSL: A Large-scale Chinese Scientific Literature Dataset}, 
+            title={CSL: A Large-scale Chinese Scientific Literature Dataset},
             author={Yudong Li and Yuqing Zhang and Zhe Zhao and Linlin Shen and Weijie Liu and Weiquan Mao and Hui Zhang},
             year={2022},
             eprint={2209.05034},
             archivePrefix={arXiv},
             primaryClass={cs.CL}
         }""",
-        descriptive_stats={
-            "n_samples": {"test": NUM_SAMPLES},
-            "avg_character_length": {},
-        },
+        prompt="Identify the main category of scholar papers based on the titles and abstracts",
+        adapted_from=["CLSClusteringP2P"],
     )
 
     def dataset_transform(self):
-        ds = dict()
+        ds = {}
         for split in self.metadata.eval_splits:
             labels = list(itertools.chain.from_iterable(self.dataset[split]["labels"]))
             sentences = list(
@@ -130,7 +125,6 @@ class CLSClusteringFastP2P(AbsTaskClusteringFast):
             self.seed,
             self.metadata.eval_splits,
             label="labels",
-            n_samples=NUM_SAMPLES,
         )
 
 
@@ -166,7 +160,7 @@ class CLSClusteringS2S(AbsTaskClustering):
   year={2022}
 }
 """,
-        descriptive_stats={"n_samples": {"test": 100000}, "avg_character_length": None},
+        prompt="Identify the main category of scholar papers based on the titles",
     )
 
 
@@ -200,7 +194,7 @@ class CLSClusteringP2P(AbsTaskClustering):
   journal={arXiv preprint arXiv:2209.05034},
   year={2022}
 }""",
-        descriptive_stats={"n_samples": {"test": 100000}, "avg_character_length": None},
+        prompt="Identify the main category of scholar papers based on the titles and abstracts",
     )
 
 
@@ -225,7 +219,7 @@ class ThuNewsClusteringFastS2S(AbsTaskClusteringFast):
         date=("2006-01-01", "2007-01-01"),
         domains=["News", "Written"],
         task_subtypes=["Thematic clustering", "Topic classification"],
-        license="Not specified",
+        license="not specified",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
@@ -237,14 +231,12 @@ class ThuNewsClusteringFastS2S(AbsTaskClusteringFast):
   publisher = {THU Natural Language Processing Lab},
   url = {https://github.com/thunlp/THUCTC}
 }""",
-        descriptive_stats={
-            "n_samples": {"test": NUM_SAMPLES},
-            "avg_character_length": {},
-        },
+        prompt="Identify the topic or theme of the given news articles based on the titles",
+        adapted_from=["ThuNewsClusteringS2S"],
     )
 
     def dataset_transform(self):
-        ds = dict()
+        ds = {}
         for split in self.metadata.eval_splits:
             labels = list(itertools.chain.from_iterable(self.dataset[split]["labels"]))
             sentences = list(
@@ -260,7 +252,6 @@ class ThuNewsClusteringFastS2S(AbsTaskClusteringFast):
             self.seed,
             self.metadata.eval_splits,
             label="labels",
-            n_samples=NUM_SAMPLES,
         )
 
 
@@ -285,7 +276,7 @@ class ThuNewsClusteringFastP2P(AbsTaskClusteringFast):
         date=("2006-01-01", "2007-01-01"),
         domains=["News", "Written"],
         task_subtypes=["Thematic clustering", "Topic classification"],
-        license="Not specified",
+        license="not specified",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
@@ -297,14 +288,12 @@ class ThuNewsClusteringFastP2P(AbsTaskClusteringFast):
   publisher = {THU Natural Language Processing Lab},
   url = {https://github.com/thunlp/THUCTC}
 }""",
-        descriptive_stats={
-            "n_samples": {"test": NUM_SAMPLES},
-            "avg_character_length": {},
-        },
+        prompt="Identify the topic or theme of the given news articles based on the titles and contents",
+        adapted_from=["ThuNewsClusteringP2P"],
     )
 
     def dataset_transform(self):
-        ds = dict()
+        ds = {}
         for split in self.metadata.eval_splits:
             labels = list(itertools.chain.from_iterable(self.dataset[split]["labels"]))
             sentences = list(
@@ -320,7 +309,6 @@ class ThuNewsClusteringFastP2P(AbsTaskClusteringFast):
             self.seed,
             self.metadata.eval_splits,
             label="labels",
-            n_samples=NUM_SAMPLES,
         )
 
 
@@ -363,7 +351,7 @@ class ThuNewsClusteringS2S(AbsTaskClustering):
   year={2006}
 }
 """,
-        descriptive_stats={"n_samples": {"test": 100000}, "avg_character_length": None},
+        prompt="Identify the topic or theme of the given news articles based on the titles",
     )
 
 
@@ -406,5 +394,5 @@ class ThuNewsClusteringP2P(AbsTaskClustering):
   year={2006}
 }
 """,
-        descriptive_stats={"n_samples": {"test": 100000}, "avg_character_length": None},
+        prompt="Identify the topic or theme of the given news articles based on the titles and contents",
     )

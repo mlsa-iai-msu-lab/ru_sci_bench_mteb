@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from mteb.abstasks import AbsTaskClassification
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
 TEST_SAMPLES = 2048
@@ -24,7 +24,7 @@ class PersianFoodSentimentClassification(AbsTaskClassification):
         date=("2020-01-01", "2020-05-31"),
         domains=["Reviews", "Written"],
         task_subtypes=["Sentiment/Hate speech"],
-        license="Not specified",
+        license="not specified",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
@@ -37,10 +37,6 @@ class PersianFoodSentimentClassification(AbsTaskClassification):
             volume={abs/2005.12515}
         }
         """,
-        descriptive_stats={
-            "n_samples": {"validation": TEST_SAMPLES, "test": TEST_SAMPLES},
-            "avg_character_length": {"validation": 90.37, "test": 90.58},
-        },
     )
 
     def dataset_transform(self):

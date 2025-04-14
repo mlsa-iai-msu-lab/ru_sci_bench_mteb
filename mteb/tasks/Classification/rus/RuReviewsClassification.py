@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskClassification
 
 
 class RuReviewsClassification(AbsTaskClassification):
@@ -39,10 +38,7 @@ class RuReviewsClassification(AbsTaskClassification):
         ISSN={2378-1963},
         month={July}
         }""",
-        descriptive_stats={
-            "n_samples": {"test": 2048},
-            "avg_character_length": {"test": 133.2},
-        },
+        prompt="Classify product reviews into positive, negative or neutral sentiment",
     )
 
     def dataset_transform(self):

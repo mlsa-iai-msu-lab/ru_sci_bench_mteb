@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from mteb.abstasks import AbsTaskClassification
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
 
@@ -20,21 +20,21 @@ class NoRecClassification(AbsTaskClassification):
         eval_splits=["test"],
         eval_langs=["nob-Latn"],
         main_score="accuracy",
-        date=None,
-        domains=None,
-        task_subtypes=None,
-        license=None,
-        annotations_creators=None,
-        dialect=None,
-        sample_creation=None,
+        date=("1998-01-01", "2018-01-01"),  # based on plot in paper
+        domains=["Written", "Reviews"],
+        task_subtypes=["Sentiment/Hate speech"],
+        license="cc-by-nc-4.0",
+        annotations_creators="derived",
+        dialect=[],
+        sample_creation="found",
         bibtex_citation="""@inproceedings{velldal-etal-2018-norec,
     title = "{N}o{R}e{C}: The {N}orwegian Review Corpus",
     author = "Velldal, Erik  and
-      {\O}vrelid, Lilja  and
+      {\\O}vrelid, Lilja  and
       Bergem, Eivind Alexander  and
       Stadsnes, Cathrine  and
       Touileb, Samia  and
-      J{\o}rgensen, Fredrik",
+      J{\\o}rgensen, Fredrik",
     editor = "Calzolari, Nicoletta  and
       Choukri, Khalid  and
       Cieri, Christopher  and
@@ -44,7 +44,7 @@ class NoRecClassification(AbsTaskClassification):
       Isahara, Hitoshi  and
       Maegaard, Bente  and
       Mariani, Joseph  and
-      Mazo, H{\'e}l{\`e}ne  and
+      Mazo, H{\\'e}l{\\`e}ne  and
       Moreno, Asuncion  and
       Odijk, Jan  and
       Piperidis, Stelios  and
@@ -57,8 +57,5 @@ class NoRecClassification(AbsTaskClassification):
     url = "https://aclanthology.org/L18-1661",
 }
 """,
-        descriptive_stats={
-            "n_samples": {"test": 2050},
-            "avg_character_length": {"test": 82},
-        },
+        prompt="Classify Norwegian reviews by sentiment",
     )

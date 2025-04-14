@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from mteb.abstasks import AbsTaskClassification
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
 
@@ -22,7 +22,7 @@ class YueOpenriceReviewClassification(AbsTaskClassification):
         date=("2019-01-01", "2019-05-01"),
         domains=["Reviews", "Spoken"],
         task_subtypes=["Sentiment/Hate speech"],
-        license="Not specified",
+        license="not specified",
         annotations_creators="human-annotated",
         dialect=[],
         sample_creation="found",
@@ -34,18 +34,9 @@ class YueOpenriceReviewClassification(AbsTaskClassification):
   year={2019},
   organization={KDD WISDOM}
 }""",
-        descriptive_stats={
-            "n_samples": {"test": 6161},
-            "avg_character_length": {"test": 173.0},
-        },
     )
 
-    @property
-    def metadata_dict(self) -> dict[str, str]:
-        metadata_dict = super().metadata_dict
-        metadata_dict["n_experiments"] = 10
-        metadata_dict["samples_per_label"] = 32
-        return metadata_dict
+    samples_per_label = 32
 
     def dataset_transform(self):
         self.dataset = self.stratified_subsampling(

@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskClassification
 
 
 class Banking77Classification(AbsTaskClassification):
@@ -26,7 +25,7 @@ class Banking77Classification(AbsTaskClassification):
         ),  # Estimated range for the collection of queries
         domains=["Written"],
         task_subtypes=[],
-        license="MIT",
+        license="mit",
         annotations_creators="human-annotated",
         dialect=[],
         sample_creation="found",
@@ -54,8 +53,5 @@ class Banking77Classification(AbsTaskClassification):
     doi = "10.18653/v1/2020.nlp4convai-1.5",
     pages = "38--45",
 }""",
-        descriptive_stats={
-            "n_samples": {"test": 3080},
-            "avg_character_length": {"test": 54.2},
-        },
+        prompt="Given a online banking query, find the corresponding intents",
     )

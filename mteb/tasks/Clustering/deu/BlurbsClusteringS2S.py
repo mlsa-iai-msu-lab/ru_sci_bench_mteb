@@ -47,10 +47,6 @@ class BlurbsClusteringS2S(AbsTaskClustering):
   year={2019},
   url={https://api.semanticscholar.org/CorpusID:208334484}
 }""",
-        descriptive_stats={
-            "n_samples": {"test": 174637},
-            "avg_character_length": {"test": 23.02},
-        },
     )
 
 
@@ -92,14 +88,11 @@ class BlurbsClusteringS2SFast(AbsTaskClusteringFast):
   year={2019},
   url={https://api.semanticscholar.org/CorpusID:208334484}
 }""",
-        descriptive_stats={
-            "n_samples": {"test": NUM_SAMPLES},
-            "avg_character_length": {"test": 23.02},
-        },
+        adapted_from=["BlurbsClusteringS2S"],
     )
 
     def dataset_transform(self):
-        ds = dict()
+        ds = {}
         for split in self.metadata.eval_splits:
             labels = list(itertools.chain.from_iterable(self.dataset[split]["labels"]))
             sentences = list(
@@ -124,5 +117,4 @@ class BlurbsClusteringS2SFast(AbsTaskClusteringFast):
             self.seed,
             self.metadata.eval_splits,
             label="labels",
-            n_samples=NUM_SAMPLES,
         )

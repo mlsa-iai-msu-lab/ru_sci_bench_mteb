@@ -3,17 +3,20 @@ from __future__ import annotations
 import json
 import logging
 import os
+import warnings
 from collections import defaultdict
 from pathlib import Path
 from time import time
-from typing import Any, Dict, Tuple
+from typing import Any
 
-import tqdm
 from datasets import Features, Value, load_dataset
 
+from mteb.abstasks.TaskMetadata import HFSubset
+
 from ..evaluation.evaluators import RetrievalEvaluator
-from ..load_results.mteb_results import ScoresDict
+from ..load_results.task_results import ScoresDict
 from .AbsTask import AbsTask
+from .TaskMetadata import DescriptiveStatistics
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +35,7 @@ class HFDataLoader:
         qrels_file: str = "",
         streaming: bool = False,
         keep_in_memory: bool = False,
+        trust_remote_code: bool = False,
     ):
         self.corpus = {}
         self.queries = {}
@@ -41,6 +45,10 @@ class HFDataLoader:
             # By default fetch qrels from same repo not a second repo with "-qrels" like in original
             self.hf_repo_qrels = hf_repo_qrels if hf_repo_qrels else hf_repo
         else:
+            warnings.warn(
+                "Loading from local files will be removed in v2.0.0.",
+                DeprecationWarning,
+            )
             # data folder would contain these files:
             # (1) fiqa/corpus.jsonl  (format: jsonlines)
             # (2) fiqa/queries.jsonl (format: jsonlines)
@@ -61,22 +69,19 @@ class HFDataLoader:
             self.qrels_file = qrels_file
         self.streaming = streaming
         self.keep_in_memory = keep_in_memory
+        self.trust_remote_code = trust_remote_code
 
     @staticmethod
     def check(fIn: str, ext: str):
         if not os.path.exists(fIn):
-            raise ValueError(
-                "File {} not present! Please provide accurate file.".format(fIn)
-            )
+            raise ValueError(f"File {fIn} not present! Please provide accurate file.")
 
         if not fIn.endswith(ext):
-            raise ValueError(
-                "File {} must be present with extension {}".format(fIn, ext)
-            )
+            raise ValueError(f"File {fIn} must be present with extension {ext}")
 
     def load(
         self, split="test"
-    ) -> Tuple[Dict[str, dict[str, str]], dict[str, str], dict[str, dict[str, int]]]:
+    ) -> tuple[dict[str, dict[str, str]], dict[str, str], dict[str, dict[str, int]]]:
         if not self.hf_repo:
             self.qrels_file = os.path.join(self.qrels_folder, split + ".tsv")
             self.check(fIn=self.corpus_file, ext="jsonl")
@@ -127,6 +132,7 @@ class HFDataLoader:
                 "corpus",
                 keep_in_memory=self.keep_in_memory,
                 streaming=self.streaming,
+                trust_remote_code=self.trust_remote_code,
             )
         else:
             corpus_ds = load_dataset(
@@ -154,6 +160,7 @@ class HFDataLoader:
                 "queries",
                 keep_in_memory=self.keep_in_memory,
                 streaming=self.streaming,
+                trust_remote_code=self.trust_remote_code,
             )
         else:
             queries_ds = load_dataset(
@@ -176,6 +183,7 @@ class HFDataLoader:
                 self.hf_repo_qrels,
                 keep_in_memory=self.keep_in_memory,
                 streaming=self.streaming,
+                trust_remote_code=self.trust_remote_code,
             )[split]
         else:
             qrels_ds = load_dataset(
@@ -195,6 +203,52 @@ class HFDataLoader:
         self.qrels = qrels_ds
 
 
+class RetrievalDescriptiveStatistics(DescriptiveStatistics):
+    """Descriptive statistics for Retrieval
+
+    Attributes:
+        num_samples: Number of queries and documents
+        num_queries: number of queries in the dataset
+        num_documents: Number of documents
+        number_of_characters: Total number of symbols in the dataset
+
+        min_document_length: Minimum length of documents
+        average_document_length: Average length of documents
+        max_document_length: Maximum length of documents
+        unique_documents: Number of unique documents
+
+        min_query_length: Minimum length of queries
+        average_query_length: Average length of queries
+        max_query_length: Maximum length of queries
+        unique_queries: Number of unique queries
+
+        min_relevant_docs_per_query: Minimum number of relevant documents per query
+        average_relevant_docs_per_query: Average number of relevant documents per query
+        max_relevant_docs_per_query: Maximum number of relevant documents per query
+        unique_relevant_docs: Number of unique relevant documents
+    """
+
+    num_samples: int
+    num_queries: int
+    num_documents: int
+    number_of_characters: int
+
+    min_document_length: int
+    average_document_length: float
+    max_document_length: int
+    unique_documents: int
+
+    min_query_length: int
+    average_query_length: float
+    max_query_length: int
+    unique_queries: int
+
+    min_relevant_docs_per_query: int
+    average_relevant_docs_per_query: float
+    max_relevant_docs_per_query: int
+    unique_relevant_docs: int
+
+
 class AbsTaskRetrieval(AbsTask):
     """Abstract class for retrieval experiments.
 
@@ -204,8 +258,8 @@ class AbsTaskRetrieval(AbsTask):
         Semantically, it should contain dict[split_name, dict[sample_id, dict[str, str]]]
         E.g. {"test": {"document_one": {"_id": "d1", "title": "title", "text": "text"}}}
 
-    self.queries: dict[str, dict[str, Union[str, List[str]]]]
-        Semantically, it should contain dict[split_name, dict[sample_id, str]] or dict[split_name, dict[sample_id, List[str]]] for conversations
+    self.queries: dict[str, dict[str, Union[str, list[str]]]]
+        Semantically, it should contain dict[split_name, dict[sample_id, str]] or dict[split_name, dict[sample_id, list[str]]] for conversations
         E.g. {"test": {"q1": "query"}}
         or {"test": {"q1": ["turn1", "turn2", "turn3"]}}
 
@@ -215,6 +269,7 @@ class AbsTaskRetrieval(AbsTask):
     """
 
     ignore_identical_ids: bool = False
+    abstask_prompt = "Retrieve text based on user query."
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -233,12 +288,14 @@ class AbsTaskRetrieval(AbsTask):
                 hf_repo_qrels=hf_repo_qrels,
                 streaming=False,
                 keep_in_memory=False,
+                trust_remote_code=self.metadata_dict["dataset"].get(
+                    "trust_remote_code", False
+                ),
             ).load(split=split)
             # Conversion from DataSet
             queries = {query["id"]: query["text"] for query in queries}
             corpus = {
-                doc["id"]: {"title": doc["title"], "text": doc["text"]}
-                for doc in corpus
+                doc["id"]: doc.get("title", "") + " " + doc["text"] for doc in corpus
             }
             self.corpus[split], self.queries[split], self.relevant_docs[split] = (
                 corpus,
@@ -252,10 +309,11 @@ class AbsTaskRetrieval(AbsTask):
         self,
         model,
         split: str = "test",
+        subsets_to_run: list[HFSubset] | None = None,
         *,
         encode_kwargs: dict[str, Any] = {},
         **kwargs,
-    ):
+    ) -> dict[HFSubset, ScoresDict]:
         retriever = RetrievalEvaluator(
             retriever=model,
             task_name=self.metadata.name,
@@ -264,9 +322,9 @@ class AbsTaskRetrieval(AbsTask):
         )
 
         scores = {}
-        hf_subsets = (
-            [l for l in self.hf_subsets] if self.is_multilingual else ["default"]
-        )
+        hf_subsets = list(self.hf_subsets) if self.is_multilingual else ["default"]
+        if subsets_to_run is not None:
+            hf_subsets = [s for s in hf_subsets if s in subsets_to_run]
 
         for hf_subset in hf_subsets:
             logger.info(f"Subset: {hf_subset}")
@@ -290,13 +348,11 @@ class AbsTaskRetrieval(AbsTask):
 
     def _evaluate_subset(
         self, retriever, corpus, queries, relevant_docs, hf_subset: str, **kwargs
-    ):
+    ) -> ScoresDict:
         start_time = time()
         results = retriever(corpus, queries)
         end_time = time()
-        logger.info(
-            "Time taken to retrieve: {:.2f} seconds".format(end_time - start_time)
-        )
+        logger.info(f"Time taken to retrieve: {end_time - start_time:.2f} seconds")
 
         save_predictions = kwargs.get("save_predictions", False)
         export_errors = kwargs.get("export_errors", False)
@@ -360,7 +416,7 @@ class AbsTaskRetrieval(AbsTask):
                     sorted_docs = sorted(
                         doc_scores.items(), key=lambda x: x[1], reverse=True
                     )[:top_k]
-                    results[qid] = {doc_id: score for doc_id, score in sorted_docs}
+                    results[qid] = dict(sorted_docs)
             for qid, retrieved_docs in results.items():
                 expected_docs = relevant_docs[qid]
                 false_positives = [
@@ -386,86 +442,94 @@ class AbsTaskRetrieval(AbsTask):
     def _add_main_score(self, scores: ScoresDict) -> None:
         scores["main_score"] = scores[self.metadata.main_score]
 
-    def calculate_metadata_metrics(self) -> None:
-        self.load_data()
+    def _calculate_metrics_from_split(
+        self, split: str, hf_subset: str | None = None, compute_overall: bool = False
+    ) -> RetrievalDescriptiveStatistics:
+        if hf_subset:
+            queries = self.queries[hf_subset][split]
+            corpus = self.corpus[hf_subset][split]
+            relevant_docs = self.relevant_docs[hf_subset][split]
+        elif compute_overall:
+            queries = {}
+            corpus = {}
+            relevant_docs = {}
+            for hf_subset in self.metadata.eval_langs:
+                queries.update(process_docs(self.queries, hf_subset, split))
+                corpus.update(process_docs(self.corpus, hf_subset, split))
+                relevant_docs.update(
+                    process_relevant_docs(self.relevant_docs, hf_subset, split)
+                )
+        else:
+            queries = self.queries[split]
+            corpus = self.corpus[split]
+            relevant_docs = self.relevant_docs[split]
 
-        all_details = {}
-        pbar_split = tqdm.tqdm(
-            self.metadata_dict["eval_splits"], desc="Processing Splits..."
+        query_len, doc_len = calculate_length(queries, corpus)
+        num_documents = len(corpus)
+        num_queries = len(queries)
+
+        # create a list of number of relevant docs per query
+        qrels_lengths = [
+            len(relevant_docs[qid]) for qid in relevant_docs if qid in queries
+        ]
+        num_qrels = sum(qrels_lengths)
+        qrels_per_doc = num_qrels / len(relevant_docs) if num_queries else 0
+        unique_qrels = len({doc for qid in relevant_docs for doc in relevant_docs[qid]})
+        return RetrievalDescriptiveStatistics(
+            number_of_characters=sum(query_len) + sum(doc_len),
+            num_samples=num_documents + num_queries,
+            num_queries=num_queries,
+            num_documents=num_documents,
+            min_document_length=min(doc_len),
+            average_document_length=sum(doc_len) / num_documents,
+            max_document_length=max(doc_len),
+            unique_documents=len(set(corpus)),
+            min_query_length=min(query_len),
+            average_query_length=sum(query_len) / num_queries,
+            max_query_length=max(query_len),
+            unique_queries=len(set(queries)),
+            min_relevant_docs_per_query=min(qrels_lengths),
+            average_relevant_docs_per_query=qrels_per_doc,
+            max_relevant_docs_per_query=max(qrels_lengths),
+            unique_relevant_docs=unique_qrels,
         )
-        for split in pbar_split:
-            pbar_split.set_postfix_str(f"Split: {split}")
-            print(f"Processing metadata for split {split}")
-            all_details[split] = {}
-            if self.is_multilingual:
-                pbar_lang = tqdm.tqdm(
-                    self.relevant_docs.keys(), desc="Processing Languages..."
-                )
-                for lang in pbar_lang:
-                    pbar_lang.set_postfix_str(f"Language: {lang}")
-                    print(f"Processing metadata for language {lang}")
-                    split_details = process_language(
-                        self.relevant_docs[lang][split],
-                        self.queries[lang][split],
-                        self.corpus[lang][split],
-                        lang,
-                    )
-                    all_details[split][lang] = split_details
-            else:
-                split_details = process_language(
-                    self.relevant_docs[split], self.queries[split], self.corpus[split]
-                )
-                all_details[split] = split_details
-
-        return all_details
 
 
-def process_language(relevant_docs, queries, corpus, lang=None):
-    """We want to get three pieces of information:
-    - the number of documents (and their char length) in the corpus
-    - the number of queries (and their char length)
-    - the average number of relevant documents per query
-    """
-    query_len, doc_len = calculate_length(queries, corpus)
-    num_documents = len(corpus)
-    num_queries = len(queries)
-
-    # number of qrels that are not 0
-    num_qrels_non_zero = sum(
-        sum(1 for doc_id in docs if docs[doc_id] != 0)
-        for docs in relevant_docs.values()
-    )
-    qrels_per_doc = num_qrels_non_zero / num_queries if num_queries else 0
-
-    language_description = f" for language {lang}" if lang else ""
-    print(f"Average document character length{language_description} is {doc_len}")
-    print(f"Average query character length{language_description} is {query_len}")
-    print(f"Number of documents{language_description} is {num_documents}")
-    print(f"Number of queries{language_description} is {num_queries}")
-    print(
-        f"Average number of relevant documents per query{language_description} is {qrels_per_doc}"
-    )
-    return {
-        "average_document_length": doc_len,
-        "average_query_length": query_len,
-        "num_documents": num_documents,
-        "num_queries": num_queries,
-        "average_relevant_docs_per_query": qrels_per_doc,
-    }
-
-
-def calculate_length(queries, corpus):
+def calculate_length(
+    queries: dict[str, str], corpus: dict[str, str]
+) -> tuple[list[int], list[int]]:
     queries_lens = []
     doc_lens = []
     for query in queries.values():
-        queries_lens.append(len(query))
+        if isinstance(query[0], str):
+            queries_lens.append(len(query))
+        else:
+            queries_lens.extend([len(turn) for turn in query])
 
     for doc in corpus.values():
-        if isinstance(doc, dict):
-            doc_lens.append(len(doc.get("title", "")) + len(doc["text"]))
-        else:
-            doc_lens.append(len(doc))
+        doc_lens.append(len(doc))
 
-    doc_len = sum(doc_lens) / len(doc_lens) if doc_lens else 0
-    query_len = sum(queries_lens) / len(queries_lens) if queries_lens else 0
-    return query_len, doc_len
+    return doc_lens, queries_lens
+
+
+def process_docs(
+    collection: dict[str, dict[str, dict[str, str] | str]], hf_subset: str, split: str
+) -> dict[str, str]:
+    """Collections can contain overlapping ids in different splits. Prepend split to avoid this"""
+    return {
+        f"{split}_{hf_subset}_{k}": v for k, v in collection[hf_subset][split].items()
+    }
+
+
+def process_relevant_docs(
+    collection: dict[str, dict[str, dict[str, dict[str, int]]]],
+    hf_subset: str,
+    split: str,
+) -> dict[str, dict[str, int]]:
+    """Collections can contain overlapping ids in different splits. Prepend split to avoid this"""
+    return_collection = {}
+    for query_id, relevant in collection[hf_subset][split].items():
+        return_collection[f"{split}_{hf_subset}_{query_id}"] = {
+            f"{split}_{hf_subset}_{doc_id}": value for doc_id, value in relevant.items()
+        }
+    return return_collection

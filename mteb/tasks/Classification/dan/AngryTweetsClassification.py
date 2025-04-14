@@ -22,7 +22,7 @@ class AngryTweetsClassification(AbsTaskClassification):
         date=("2021-01-01", "2021-12-31"),
         domains=["Social", "Written"],
         task_subtypes=["Sentiment/Hate speech"],
-        license="CC-BY-4.0",
+        license="cc-by-4.0",
         annotations_creators="human-annotated",
         dialect=[],
         sample_creation="found",
@@ -33,15 +33,7 @@ class AngryTweetsClassification(AbsTaskClassification):
   pages={460--466},
   year={2021}
 }""",
-        descriptive_stats={
-            "n_samples": {"test": 1050},
-            "avg_character_length": {"test": 156.1},
-        },
+        prompt="Classify Danish tweets by sentiment. (positive, negative, neutral).",
     )
 
-    @property
-    def metadata_dict(self) -> dict[str, str]:
-        metadata_dict = super().metadata_dict
-        metadata_dict["n_experiments"] = 10
-        metadata_dict["samples_per_label"] = 16
-        return metadata_dict
+    samples_per_label = 16

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from mteb.abstasks import AbsTaskClassification
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
 
@@ -22,15 +22,11 @@ class GujaratiNewsClassification(AbsTaskClassification):
         main_score="accuracy",
         domains=["News", "Written"],
         task_subtypes=["Topic classification"],
-        license="MIT",
+        license="mit",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
         bibtex_citation="",  # none found
-        descriptive_stats={
-            "n_samples": {"train": 5269, "test": 1318},
-            "avg_character_length": {"train": 61.95, "test": 61.91},
-        },
     )
 
     def dataset_transform(self):

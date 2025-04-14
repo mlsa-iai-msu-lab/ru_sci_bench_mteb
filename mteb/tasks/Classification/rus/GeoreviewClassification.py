@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskClassification
 
 
 class GeoreviewClassification(AbsTaskClassification):
@@ -29,10 +28,7 @@ class GeoreviewClassification(AbsTaskClassification):
         dialect=[],
         sample_creation="found",
         bibtex_citation="",
-        descriptive_stats={
-            "n_samples": {"test": 2048},
-            "avg_character_length": {"test": 409.0},
-        },
+        prompt="Classify the organization rating based on the reviews",
     )
 
     def dataset_transform(self):

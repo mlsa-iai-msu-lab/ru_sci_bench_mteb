@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import random
+from collections.abc import Iterable
 from itertools import islice
-from typing import Iterable, TypeVar
+from typing import TypeVar
 
 import datasets
 
-from mteb.abstasks import AbsTaskClustering, TaskMetadata
+from mteb.abstasks.AbsTaskClustering import AbsTaskClustering
+from mteb.abstasks.TaskMetadata import TaskMetadata
 
 T = TypeVar("T")
 
@@ -38,7 +40,7 @@ class SNLClustering(AbsTaskClustering):
         main_score="v_measure",
         date=("2020-01-01", "2024-12-31"),  # best guess
         domains=["Encyclopaedic", "Non-fiction", "Written"],
-        license=None,
+        license="cc-by-nc-4.0",  # version is assumed (not specified before)
         annotations_creators="derived",
         dialect=[],
         task_subtypes=["Thematic clustering"],
@@ -49,10 +51,6 @@ class SNLClustering(AbsTaskClustering):
   year={2023},
   school={Norwegian University of Life Sciences, {\AA}s}
 }""",
-        descriptive_stats={
-            "n_samples": {"test": 2048},
-            "avg_character_length": {"test": 1101.30},
-        },
     )
 
     def dataset_transform(self):
@@ -78,7 +76,7 @@ class SNLClustering(AbsTaskClustering):
             rng = random.Random(42)  # local only seed
             pairs = list(zip(documents, labels))
             rng.shuffle(pairs)
-            documents, labels = [list(collection) for collection in zip(*pairs)]
+            documents, labels = (list(collection) for collection in zip(*pairs))
 
             # reduce size of dataset to not have too large datasets in the clustering task
             documents_batched = list(batched(documents, 512))[:4]

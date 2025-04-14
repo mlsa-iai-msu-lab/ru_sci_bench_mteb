@@ -19,7 +19,7 @@ class NarrativeQARetrieval(AbsTaskRetrieval):
         reference="https://metatext.io/datasets/narrativeqa",
         description=(
             "NarrativeQA is a dataset for the task of question answering on long narratives. It consists of "
-            "realistic QA instances collected from literature (fiction and non-fiction) and movie scripts. "
+            + "realistic QA instances collected from literature (fiction and non-fiction) and movie scripts. "
         ),
         type="Retrieval",
         category="s2p",
@@ -35,25 +35,13 @@ class NarrativeQARetrieval(AbsTaskRetrieval):
         dialect=None,
         sample_creation=None,
         bibtex_citation="""@misc{kočiský2017narrativeqa,
-      title={The NarrativeQA Reading Comprehension Challenge}, 
+      title={The NarrativeQA Reading Comprehension Challenge},
       author={Tomáš Kočiský and Jonathan Schwarz and Phil Blunsom and Chris Dyer and Karl Moritz Hermann and Gábor Melis and Edward Grefenstette},
       year={2017},
       eprint={1712.07040},
       archivePrefix={arXiv},
       primaryClass={cs.CL}
 }""",
-        descriptive_stats={
-            "n_samples": None,
-            "avg_character_length": {
-                "test": {
-                    "average_document_length": 326753.5323943662,
-                    "average_query_length": 47.730889457232166,
-                    "num_documents": 355,
-                    "num_queries": 10557,
-                    "average_relevant_docs_per_query": 1.0,
-                }
-            },
-        },
     )
 
     def load_data(self, **kwargs):

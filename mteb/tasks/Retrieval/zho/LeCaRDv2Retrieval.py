@@ -23,28 +23,16 @@ class LeCaRDv2(AbsTaskRetrieval):
         date=None,
         domains=["Legal", "Written"],
         task_subtypes=["Article retrieval"],
-        license="MIT",
+        license="mit",
         annotations_creators="derived",
         dialect=None,
         sample_creation="found",
         bibtex_citation="""@misc{li2023lecardv2,
-      title={LeCaRDv2: A Large-Scale Chinese Legal Case Retrieval Dataset}, 
+      title={LeCaRDv2: A Large-Scale Chinese Legal Case Retrieval Dataset},
       author={Haitao Li and Yunqiu Shao and Yueyue Wu and Qingyao Ai and Yixiao Ma and Yiqun Liu},
       year={2023},
       eprint={2310.17609},
       archivePrefix={arXiv},
       primaryClass={cs.CL}
 }""",
-        descriptive_stats={
-            "n_samples": None,
-            "avg_character_length": {
-                "test": {
-                    "average_document_length": 7232.823978919631,
-                    "average_query_length": 4259.440251572327,
-                    "num_documents": 3795,
-                    "num_queries": 159,
-                    "average_relevant_docs_per_query": 24.50314465408805,
-                }
-            },
-        },
     )

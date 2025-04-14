@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskMultilabelClassification import (
+    AbsTaskMultilabelClassification,
+)
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskMultilabelClassification
 
 
 class CEDRClassification(AbsTaskMultilabelClassification):
@@ -37,8 +38,5 @@ class CEDRClassification(AbsTaskMultilabelClassification):
         publisher={Elsevier}
         }
         """,
-        descriptive_stats={
-            "n_samples": {"test": 1882},
-            "avg_character_length": {"test": 91.2},
-        },
+        prompt="Given a comment as query, find expressed emotions (joy, sadness, surprise, fear, and anger)",
     )

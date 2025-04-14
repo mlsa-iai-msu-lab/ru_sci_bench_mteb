@@ -5,8 +5,9 @@ import itertools
 import numpy as np
 from datasets import Dataset, DatasetDict
 
-from mteb.abstasks import AbsTaskClustering, MultilingualTask
+from mteb.abstasks.AbsTaskClustering import AbsTaskClustering
 from mteb.abstasks.AbsTaskClusteringFast import AbsTaskClusteringFast
+from mteb.abstasks.MultilingualTask import MultilingualTask
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
 _LANGUAGES = {
@@ -51,10 +52,6 @@ class WikiClusteringP2P(AbsTaskClustering, MultilingualTask):
         dialect=[],
         sample_creation="created",
         bibtex_citation=None,  # None exists
-        descriptive_stats={
-            "n_samples": {"test": 71680},
-            "avg_character_length": {"test": 625.3},
-        },
     )
 
 
@@ -84,19 +81,16 @@ class WikiClusteringFastP2P(AbsTaskClusteringFast, MultilingualTask):
         dialect=[],
         sample_creation="created",
         bibtex_citation="",  # None exists
-        descriptive_stats={
-            "n_samples": {"test": 2048},
-            "avg_character_length": {"test": 625.3},
-        },
+        adapted_from=["WikiClusteringP2P"],
     )
 
     def dataset_transform(self):
-        ds = dict()
+        ds = {}
         for lang in self.hf_subsets:
             labels = []
             sentences = []
-            ds[lang] = dict()
-            lang_dict = dict()
+            ds[lang] = {}
+            lang_dict = {}
             for split in self.metadata.eval_splits:
                 labels.extend(
                     itertools.chain.from_iterable(self.dataset[lang][split]["labels"])
@@ -124,5 +118,4 @@ class WikiClusteringFastP2P(AbsTaskClusteringFast, MultilingualTask):
                 self.seed,
                 self.metadata.eval_splits,
                 label="labels",
-                n_samples=2048,
             )

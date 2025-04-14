@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskClassification
 
 _LANGUAGES = [
     "ara-Arab",
@@ -46,7 +45,7 @@ class LanguageClassification(AbsTaskClassification):
         date=("2021-11-01", "2021-11-30"),
         domains=["Reviews", "Web", "Non-fiction", "Fiction", "Government", "Written"],
         task_subtypes=["Language identification"],
-        license="Not specified",
+        license="not specified",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
@@ -65,10 +64,6 @@ class LanguageClassification(AbsTaskClassification):
   publisher = {Association for Computational Linguistics},
   location = {Brussels, Belgium},
 }""",
-        descriptive_stats={
-            "n_samples": {"test": 2048},
-            "avg_character_length": {"test": 107.8},
-        },
     )
 
     def dataset_transform(self) -> None:

@@ -7,7 +7,8 @@ from typing import TypeVar
 
 import datasets
 
-from mteb.abstasks import AbsTaskClustering, TaskMetadata
+from mteb.abstasks.AbsTaskClustering import AbsTaskClustering
+from mteb.abstasks.TaskMetadata import TaskMetadata
 
 T = TypeVar("T")
 
@@ -53,10 +54,6 @@ class SwednClustering(AbsTaskClustering):
   booktitle={Proceedings of CLARIN Annual Conference},
   year={2021}
 }""",
-        descriptive_stats={
-            "n_samples": {"all": 2048},
-            "avg_character_length": {"all": 1619.71},
-        },
     )
 
     def dataset_transform(self):

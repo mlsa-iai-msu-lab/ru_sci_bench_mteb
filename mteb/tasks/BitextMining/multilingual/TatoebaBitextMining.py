@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskBitextMining import AbsTaskBitextMining
+from mteb.abstasks.MultilingualTask import MultilingualTask
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskBitextMining, MultilingualTask
 
 _LANGUAGES = {
     "sqi-eng": ["sqi-Latn", "eng-Latn"],
@@ -141,7 +141,7 @@ class TatoebaBitextMining(AbsTaskBitextMining, MultilingualTask):
             "Written"
         ],  # Tatoeba corpus includes a wide range of topics and domains
         task_subtypes=[],
-        license="CC BY 2.0",
+        license="cc-by-2.0",
         annotations_creators="human-annotated",
         dialect=[],  # No specific dialect mentioned
         sample_creation="found",
@@ -152,8 +152,4 @@ class TatoebaBitextMining(AbsTaskBitextMining, MultilingualTask):
         year = {2021},
         }
         """,
-        descriptive_stats={
-            "n_samples": {"test": 2000},
-            "avg_character_length": {"test": 39.4},
-        },
     )

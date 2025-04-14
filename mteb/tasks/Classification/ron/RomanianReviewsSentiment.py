@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from mteb.abstasks import AbsTaskClassification
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-N_SAMPLES = 2048
 
 
 class RomanianReviewsSentiment(AbsTaskClassification):
@@ -25,7 +23,7 @@ class RomanianReviewsSentiment(AbsTaskClassification):
         main_score="accuracy",
         domains=["Reviews", "Written"],
         task_subtypes=["Sentiment/Hate speech"],
-        license="CC-BY-4.0",
+        license="cc-by-4.0",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
@@ -38,10 +36,6 @@ class RomanianReviewsSentiment(AbsTaskClassification):
     year = {2021}
 }
 """,
-        descriptive_stats={
-            "n_samples": {"test": N_SAMPLES},
-            "avg_character_length": {"test": 588.6},
-        },
     )
 
     def dataset_transform(self):

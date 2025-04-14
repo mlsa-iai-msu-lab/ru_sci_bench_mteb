@@ -27,15 +27,12 @@ class RuSciBenchOECDClusteringP2P(AbsTaskClusteringFast):
         date=("2007-01-01", "2023-01-01"),
         domains=["Academic", "Non-fiction", "Written"],
         task_subtypes=["Thematic clustering"],
-        license="MIT",
+        license="not specified",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
         bibtex_citation="",
-        descriptive_stats={
-            "n_samples": {"test": 2048},
-            "avg_character_length": {"test": 838.9},
-        },
+        prompt="Identify the category of scientific papers based on the titles and abstracts",
     )
 
     def dataset_transform(self):
@@ -45,6 +42,5 @@ class RuSciBenchOECDClusteringP2P(AbsTaskClusteringFast):
             self.dataset,
             seed=self.seed,
             splits=["test"],
-            n_samples=2048,
             label="labels",
         )

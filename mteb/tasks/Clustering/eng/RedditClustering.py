@@ -30,13 +30,13 @@ class RedditFastClusteringS2S(AbsTaskClusteringFast):
         date=("2021-01-01", "2021-04-14"),
         domains=["Web", "Social", "Written"],
         task_subtypes=["Thematic clustering"],
-        license="Not specified",  # derived from pushshift
+        license="not specified",  # derived from pushshift
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
         bibtex_citation="""@article{geigle:2021:arxiv,
-        author    = {Gregor Geigle and 
-                        Nils Reimers and 
+        author    = {Gregor Geigle and
+                        Nils Reimers and
                         Andreas R{\"u}ckl{\'e} and
                         Iryna Gurevych},
         title     = {TWEAC: Transformer with Extendable QA Agent Classifiers},
@@ -47,14 +47,12 @@ class RedditFastClusteringS2S(AbsTaskClusteringFast):
         archivePrefix = {arXiv},
         eprint    = {2104.07081}
         }""",
-        descriptive_stats={
-            "n_samples": {"test": 32768},
-            "avg_character_length": {"test": 64.7},
-        },
+        prompt="Identify the topic or theme of Reddit posts based on the titles",
+        adapted_from=["RedditClustering"],
     )
 
     def dataset_transform(self):
-        ds = dict()
+        ds = {}
         for split in self.metadata.eval_splits:
             labels = list(itertools.chain.from_iterable(self.dataset[split]["labels"]))
             sentences = list(
@@ -68,7 +66,6 @@ class RedditFastClusteringS2S(AbsTaskClusteringFast):
             self.seed,
             self.metadata.eval_splits,
             label="labels",
-            n_samples=32768,
         )
         self.max_fraction_of_documents_to_embed = None
 
@@ -89,17 +86,16 @@ class RedditClustering(AbsTaskClustering):
         eval_splits=["test"],
         eval_langs=["eng-Latn"],
         main_score="v_measure",
-        date=None,
-        form=None,
-        domains=None,
-        task_subtypes=None,
-        license=None,
-        annotations_creators=None,
-        dialect=None,
-        sample_creation=None,
+        date=("2021-01-01", "2021-04-14"),
+        domains=["Web", "Social", "Written"],
+        task_subtypes=["Thematic clustering"],
+        license="not specified",  # derived from pushshift
+        annotations_creators="derived",
+        dialect=[],
+        sample_creation="found",
         bibtex_citation="""@article{geigle:2021:arxiv,
-        author    = {Gregor Geigle and 
-                        Nils Reimers and 
+        author    = {Gregor Geigle and
+                        Nils Reimers and
                         Andreas R{\"u}ckl{\'e} and
                         Iryna Gurevych},
         title     = {TWEAC: Transformer with Extendable QA Agent Classifiers},
@@ -110,8 +106,5 @@ class RedditClustering(AbsTaskClustering):
         archivePrefix = {arXiv},
         eprint    = {2104.07081}
         }""",
-        descriptive_stats={
-            "n_samples": {"test": 420464},
-            "avg_character_length": {"test": 64.7},
-        },
+        prompt="Identify the topic or theme of Reddit posts based on the titles",
     )

@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskClassification
 
 
 class RuSciBenchOECDClassification(AbsTaskClassification):
@@ -23,15 +22,12 @@ class RuSciBenchOECDClassification(AbsTaskClassification):
         date=("2007-01-01", "2023-01-01"),
         domains=["Academic", "Non-fiction", "Written"],
         task_subtypes=["Topic classification"],
-        license="MIT",
+        license="not specified",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
         bibtex_citation="",
-        descriptive_stats={
-            "n_samples": {"test": 2048},
-            "avg_character_length": {"test": 838.9},
-        },
+        prompt="Classify the category of scientific papers based on the titles and abstracts",
     )
 
     def dataset_transform(self):

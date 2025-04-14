@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskBitextMining import AbsTaskBitextMining
+from mteb.abstasks.MultilingualTask import MultilingualTask
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskBitextMining, MultilingualTask
 
 _LANGUAGES = {
     "ind-abs": ["ind-Latn", "abs-Latn"],
@@ -37,7 +37,7 @@ class NusaTranslationBitextMining(AbsTaskBitextMining, MultilingualTask):
         date=("2021-08-01", "2022-07-01"),
         domains=["Social", "Written"],
         task_subtypes=[],
-        license="CC BY-SA 4.0",
+        license="cc-by-sa-4.0",
         annotations_creators="human-annotated",
         dialect=[],
         sample_creation="created",
@@ -51,8 +51,4 @@ class NusaTranslationBitextMining(AbsTaskBitextMining, MultilingualTask):
         }
 
         """,
-        descriptive_stats={
-            "n_samples": {"train": 50200},
-            "avg_character_length": {"train": 147.01},
-        },
     )

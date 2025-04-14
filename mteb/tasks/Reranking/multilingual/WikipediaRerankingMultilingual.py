@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from mteb.abstasks.MultilingualTask import MultilingualTask
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
-from ....abstasks import MultilingualTask
 from ....abstasks.AbsTaskReranking import AbsTaskReranking
 
 _EVAL_LANGS = {
@@ -30,7 +30,6 @@ class WikipediaRerankingMultilingual(MultilingualTask, AbsTaskReranking):
         name="WikipediaRerankingMultilingual",
         description="The dataset is derived from Cohere's wikipedia-2023-11 dataset and contains synthetically generated queries.",
         reference="https://huggingface.co/datasets/ellamind/wikipedia-2023-11-reranking-multilingual",
-        hf_hub_name="ellamind/wikipedia-2023-11-reranking-multilingual",
         dataset={
             "path": "ellamind/wikipedia-2023-11-reranking-multilingual",
             "revision": "6268b37d6f975f2a134791ba2f250a91d0bdfb4f",
@@ -45,7 +44,7 @@ class WikipediaRerankingMultilingual(MultilingualTask, AbsTaskReranking):
         domains=["Encyclopaedic", "Written"],
         task_subtypes=[],
         license="cc-by-sa-3.0",
-        annotations_creators="LM-generated",
+        annotations_creators="LM-generated and reviewed",
         dialect=[],
         sample_creation="LM-generated and verified",
         bibtex_citation="""@ONLINE{wikidump,
@@ -53,25 +52,4 @@ class WikipediaRerankingMultilingual(MultilingualTask, AbsTaskReranking):
     title  = "Wikimedia Downloads",
     url    = "https://dumps.wikimedia.org"
 }""",
-        descriptive_stats={
-            "n_samples": {
-                "en": 1500,
-                "de": 1500,
-                "it": 1500,
-                "pt": 1500,
-                "nl": 1500,
-                "cs": 1500,
-                "ro": 1500,
-                "bg": 1500,
-                "sr": 1500,
-                "fi": 1500,
-                "da": 1500,
-                "fa": 1500,
-                "hi": 1500,
-                "bn": 1500,
-                "no": 1500,
-                "sv": 1500,
-            },
-            "avg_character_length": {"test": 452},
-        },
     )

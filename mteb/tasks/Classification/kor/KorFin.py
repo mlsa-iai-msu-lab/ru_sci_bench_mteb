@@ -1,4 +1,8 @@
-from mteb.abstasks import AbsTaskClassification  # type: ignore
+from __future__ import annotations
+
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
+
+# type: ignore
 from mteb.abstasks.TaskMetadata import TaskMetadata  # type: ignore
 
 
@@ -21,9 +25,9 @@ class KorFin(AbsTaskClassification):
             "2022-01-01",
             "2022-12-31",
         ),  # Assumed date based on the citations in the paper
-        domains=["News", "Written"],
+        domains=["News", "Written", "Financial"],
         task_subtypes=["Sentiment/Hate speech"],
-        license="CC BY-SA 4.0",
+        license="cc-by-sa-4.0",
         annotations_creators="expert-annotated",
         dialect=[],
         sample_creation="found",
@@ -35,10 +39,6 @@ class KorFin(AbsTaskClassification):
         year={2023}
         }
         """,
-        descriptive_stats={
-            "n_samples": {"test": 2048},
-            "avg_character_length": {"test": 75.28},
-        },
     )
 
     def dataset_transform(self):

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
+from mteb.abstasks.MultilingualTask import MultilingualTask
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskClassification, MultilingualTask
 
 _LANGUAGES = {
     "af": ["afr-Latn"],
@@ -76,22 +76,19 @@ class MassiveScenarioClassification(MultilingualTask, AbsTaskClassification):
         eval_langs=_LANGUAGES,
         main_score="accuracy",
         date=("2022-01-01", "2022-04-22"),
-        domains=["Spoken", "Spoken"],
+        domains=["Spoken"],
         task_subtypes=[],
-        license="Apache 2.0",
+        license="apache-2.0",
         annotations_creators="human-annotated",
         dialect=[],
-        sample_creation="created",
+        sample_creation="human-translated and localized",  # with the exception of the English data
         bibtex_citation="""@misc{fitzgerald2022massive,
-      title={MASSIVE: A 1M-Example Multilingual Natural Language Understanding Dataset with 51 Typologically-Diverse Languages}, 
+      title={MASSIVE: A 1M-Example Multilingual Natural Language Understanding Dataset with 51 Typologically-Diverse Languages},
       author={Jack FitzGerald and Christopher Hench and Charith Peris and Scott Mackie and Kay Rottmann and Ana Sanchez and Aaron Nash and Liam Urbach and Vishesh Kakarala and Richa Singh and Swetha Ranganath and Laurie Crist and Misha Britan and Wouter Leeuwis and Gokhan Tur and Prem Natarajan},
       year={2022},
       eprint={2204.08582},
       archivePrefix={arXiv},
       primaryClass={cs.CL}
 }""",
-        descriptive_stats={
-            "n_samples": {"validation": 2033, "test": 2974},
-            "avg_character_length": {"validation": 34.8, "test": 34.6},
-        },
+        prompt="Given a user utterance as query, find the user scenarios",
     )

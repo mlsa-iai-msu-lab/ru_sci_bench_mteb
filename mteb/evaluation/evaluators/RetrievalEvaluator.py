@@ -5,25 +5,23 @@ import json
 import logging
 import os
 from collections import defaultdict
-from typing import Any, Dict, List, Tuple, Union
+from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pytrec_eval
 import torch
 import tqdm
 from sentence_transformers import CrossEncoder, SentenceTransformer
-from sentence_transformers.models import Transformer, WordEmbeddings
 
-from mteb.encoder_interface import Encoder, EncoderWithQueryCorpusEncode
+from mteb.encoder_interface import Encoder, PromptType
 from mteb.model_meta import ModelMeta
 
 from .Evaluator import Evaluator
-from .model_encode import model_encode
 from .utils import (
     confidence_scores,
     convert_conv_history_to_query,
     cos_sim,
-    dot_score,
     download,
     hole,
     mrr,
@@ -35,14 +33,36 @@ from .utils import (
 logger = logging.getLogger(__name__)
 
 
+def corpus_to_str(
+    corpus: list[dict[str, str]] | dict[str, list[str]] | list[str],
+) -> list[str]:
+    if isinstance(corpus, dict):
+        sentences = [
+            (corpus["title"][i] + " " + corpus["text"][i]).strip()
+            if "title" in corpus
+            else corpus["text"][i].strip()
+            for i in range(len(corpus["text"]))
+        ]
+    elif isinstance(corpus, list) and isinstance(corpus[0], dict):
+        sentences = [
+            (doc["title"] + " " + doc["text"]).strip()
+            if "title" in doc
+            else doc["text"].strip()
+            for doc in corpus
+        ]
+    else:
+        sentences = corpus
+    return sentences
+
+
 # Adapted from https://github.com/beir-cellar/beir/blob/f062f038c4bfd19a8ca942a9910b1e0d218759d4/beir/retrieval/search/dense/exact_search.py#L12
 class DenseRetrievalExactSearch:
     def __init__(
         self,
-        model: EncoderWithQueryCorpusEncode,
+        model: Encoder,
         encode_kwargs: dict[str, Any] = {},
         corpus_chunk_size: int = 50000,
-        previous_results: str | None = None,
+        previous_results: str | Path | None = None,
         **kwargs: Any,
     ):
         # Model is class that provides encode_corpus() and encode_queries()
@@ -56,13 +76,11 @@ class DenseRetrievalExactSearch:
         if "convert_to_tensor" not in encode_kwargs:
             encode_kwargs["convert_to_tensor"] = True
 
-        self.score_functions = {"cos_sim": cos_sim, "dot": dot_score}
-        self.score_function_desc = {
-            "cos_sim": "Cosine Similarity",
-            "dot": "Dot Product",
-        }
         self.corpus_chunk_size = corpus_chunk_size
-        self.previous_results = previous_results
+        if isinstance(previous_results, Path):
+            self.previous_results = str(previous_results)
+        else:
+            self.previous_results = previous_results
         self.batch_size = encode_kwargs.get("batch_size")
         self.show_progress_bar = encode_kwargs.get("show_progress_bar")
         self.save_corpus_embeddings = kwargs.get("save_corpus_embeddings", False)
@@ -80,23 +98,14 @@ class DenseRetrievalExactSearch:
     def search(
         self,
         corpus: dict[str, dict[str, str]],
-        queries: dict[str, Union[str, List[str]]],
+        queries: dict[str, str | list[str]],
         top_k: int,
-        score_function: str,
-        prompt_name: str,
-        instructions: Dict[str, str] | None = None,
-        request_qid: Union[str, None] = None,
+        task_name: str,
+        instructions: dict[str, str] | None = None,
+        request_qid: str | None = None,
         return_sorted: bool = False,
         **kwargs,
     ) -> dict[str, dict[str, float]]:
-        # Create embeddings for all queries using model.encode_queries()
-        # Runs semantic search against the corpus embeddings
-        # Returns a ranked list with the corpus ids
-        if score_function not in self.score_functions:
-            raise ValueError(
-                f"score function: {score_function} must be either (cos_sim) for cosine similarity or (dot) for dot product"
-            )
-
         logger.info("Encoding Queries.")
         query_ids = list(queries.keys())
         self.results = {qid: {} for qid in query_ids}
@@ -107,30 +116,25 @@ class DenseRetrievalExactSearch:
             query_embeddings = self.encode_conversations(
                 model=self.model,
                 conversations=queries,  # type: ignore
-                prompt_name=prompt_name,
+                task_name=task_name,
                 **self.encode_kwargs,
             )
         else:
-            query_embeddings = self.model.encode_queries(
+            query_embeddings = self.model.encode(
                 queries,  # type: ignore
-                prompt_name=prompt_name,
+                task_name=task_name,
+                prompt_type=PromptType.query,
                 **self.encode_kwargs,
             )
 
         logger.info("Sorting Corpus by document length (Longest first)...")
         corpus_ids = sorted(
             corpus,
-            key=lambda k: len(corpus[k].get("title", "") + corpus[k].get("text", "")),
             reverse=True,
         )
         corpus = [corpus[cid] for cid in corpus_ids]  # type: ignore
 
         logger.info("Encoding Corpus in batches... Warning: This might take a while!")
-        logger.info(
-            "Scoring Function: {} ({})".format(
-                self.score_function_desc[score_function], score_function
-            )
-        )
 
         itr = range(0, len(corpus), self.corpus_chunk_size)
 
@@ -138,7 +142,7 @@ class DenseRetrievalExactSearch:
             qid: [] for qid in query_ids
         }  # Keep only the top-k docs for each query
         for batch_num, corpus_start_idx in enumerate(itr):
-            logger.info("Encoding Batch {}/{}...".format(batch_num + 1, len(itr)))
+            logger.info(f"Encoding Batch {batch_num + 1}/{len(itr)}...")
             corpus_end_idx = min(corpus_start_idx + self.corpus_chunk_size, len(corpus))
 
             # Encode chunk of corpus
@@ -152,39 +156,53 @@ class DenseRetrievalExactSearch:
                 )
             else:
                 # Encode chunk of corpus
-                sub_corpus_embeddings = self.model.encode_corpus(
+                sub_corpus_embeddings = self.model.encode(
                     corpus[corpus_start_idx:corpus_end_idx],  # type: ignore
-                    prompt_name=prompt_name,
+                    task_name=task_name,
+                    prompt_type=PromptType.passage,
                     request_qid=request_qid,
                     **self.encode_kwargs,
                 )
                 if self.save_corpus_embeddings and request_qid:
                     self.corpus_embeddings[request_qid].append(sub_corpus_embeddings)
 
-            # Compute similarites using either cosine-similarity or dot product
-            cos_scores = self.score_functions[score_function](
-                query_embeddings, sub_corpus_embeddings
-            )
-            cos_scores[torch.isnan(cos_scores)] = -1
+            # Compute similarites using self defined similarity otherwise default to cosine-similarity
+            if hasattr(self.model, "similarity"):
+                similarity_scores = self.model.similarity(
+                    query_embeddings, sub_corpus_embeddings
+                )
+            else:
+                similarity_scores = cos_sim(query_embeddings, sub_corpus_embeddings)
+            is_nan = torch.isnan(similarity_scores)
+            if is_nan.sum() > 0:
+                logger.warning(
+                    f"Found {is_nan.sum()} NaN values in the similarity scores. Replacing NaN values with -1."
+                )
+            similarity_scores[is_nan] = -1
 
             # Get top-k values
-            cos_scores_top_k_values, cos_scores_top_k_idx = torch.topk(
-                cos_scores,
+            similarity_scores_top_k_values, similarity_scores_top_k_idx = torch.topk(
+                similarity_scores,
                 min(
                     top_k + 1,
-                    len(cos_scores[1]) if len(cos_scores) > 1 else len(cos_scores[-1]),
+                    len(similarity_scores[1])
+                    if len(similarity_scores) > 1
+                    else len(similarity_scores[-1]),
                 ),
                 dim=1,
                 largest=True,
                 sorted=return_sorted,
             )
-            cos_scores_top_k_values = cos_scores_top_k_values.cpu().tolist()
-            cos_scores_top_k_idx = cos_scores_top_k_idx.cpu().tolist()
+            similarity_scores_top_k_values = (
+                similarity_scores_top_k_values.cpu().tolist()
+            )
+            similarity_scores_top_k_idx = similarity_scores_top_k_idx.cpu().tolist()
 
             for query_itr in range(len(query_embeddings)):
                 query_id = query_ids[query_itr]
                 for sub_corpus_id, score in zip(
-                    cos_scores_top_k_idx[query_itr], cos_scores_top_k_values[query_itr]
+                    similarity_scores_top_k_idx[query_itr],
+                    similarity_scores_top_k_values[query_itr],
                 ):
                     corpus_id = corpus_ids[corpus_start_idx + sub_corpus_id]
                     if len(result_heaps[query_id]) < top_k:
@@ -218,7 +236,7 @@ class DenseRetrievalExactSearch:
                 )
             self.previous_results = dest_file
 
-        with open(self.previous_results, "r") as f:
+        with open(self.previous_results) as f:
             previous_results = json.load(f)
         assert isinstance(previous_results, dict)
         assert isinstance(previous_results[list(previous_results.keys())[0]], dict)
@@ -226,26 +244,30 @@ class DenseRetrievalExactSearch:
 
     def search_cross_encoder(
         self,
-        corpus: Dict[str, Dict[str, str]],
-        queries: Dict[str, Union[str, List[str]]],
+        corpus: dict[str, dict[str, str]],
+        queries: dict[str, str | list[str]],
         top_k: int,
-        instructions: Union[Dict[str, str], None] = None,
+        instructions: dict[str, str] | None = None,
         **kwargs,
-    ) -> Dict[str, Dict[str, float]]:
+    ) -> dict[str, dict[str, float]]:
         """This function provides support for reranker (or cross-encoder) models that encoder query and document at the same time (typically with attention).
         Some notable examples include MonoBERT, MonoT5, RankLlama, etc.
-        Note: you must provide the path to the results to rerank to the __init__ function as `previous_results`
+        Note: you must provide the path to the results to rerank to the __init__ function as `previous_results` or else rerank all documents in the corpus
         """
         pairs = []  # create the pairs for reranking
         for qid in queries.keys():
-            q_results = self.previous_results[qid]
-            # take the top-k only
-            q_results_sorted = {
-                k: v
-                for k, v in sorted(
-                    q_results.items(), key=lambda item: item[1], reverse=True
+            if self.previous_results is None:
+                # try to use all of them
+                logging.info(
+                    f"previous_results is None. Using all the documents to rerank: {len(corpus)}"
                 )
-            }
+                q_results = {doc_id: 0.0 for doc_id in corpus.keys()}
+            else:
+                q_results = self.previous_results[qid]
+            # take the top-k only
+            q_results_sorted = dict(
+                sorted(q_results.items(), key=lambda item: item[1], reverse=True)
+            )
             top_n = [k for k, v in list(q_results_sorted.items())[:top_k]]
             query = queries[qid]
             query = (
@@ -254,13 +276,10 @@ class DenseRetrievalExactSearch:
                 else query
             )
             for doc_id in top_n:
-                corpus_item = (
-                    corpus[doc_id].get("title", "") + " " + corpus[doc_id]["text"]
-                ).strip()
                 pairs.append(
                     (
                         query,
-                        corpus_item,
+                        corpus[doc_id],
                         instructions[query] if instructions is not None else None,
                         qid,
                         doc_id,
@@ -288,13 +307,17 @@ class DenseRetrievalExactSearch:
             assert (
                 len(queries_in_pair) == len(corpus_in_pair) == len(instructions_in_pair)
             )
+            corpus_in_pair = corpus_to_str(list(corpus_in_pair))
 
-            if isinstance(self.model, CrossEncoder):
+            if hasattr(self.model, "model") and isinstance(
+                self.model.model, CrossEncoder
+            ):
                 # can't take instructions, so add them here
-                queries_in_pair = [
-                    f"{q} {i}".strip()
-                    for i, q in zip(instructions_in_pair, queries_in_pair)
-                ]
+                if instructions_in_pair[0] is not None:
+                    queries_in_pair = [
+                        f"{q} {i}".strip()
+                        for i, q in zip(instructions_in_pair, queries_in_pair)
+                    ]
                 scores = self.model.predict(list(zip(queries_in_pair, corpus_in_pair)))  # type: ignore
             else:
                 # may use the instructions in a unique way, so give them also
@@ -313,16 +336,23 @@ class DenseRetrievalExactSearch:
         )
 
     def encode_conversations(
-        self, model: Encoder, conversations: list[list[str]], prompt_name: str, **kwargs
+        self,
+        model: Encoder,
+        conversations: list[list[str]],
+        task_name: str,
+        **kwargs,
     ):
         if callable(getattr(self.model, "encode_conversations", None)):
             return model.encode_conversations(  # type: ignore
-                conversations, prompt_name=prompt_name, **kwargs
+                conversations, task_name=task_name, **kwargs
             )
-        # otherwise fallback to default implementation
-        # TODO: add a warning here
+        logger.warning(
+            "Model doesn't have encode_conversations fallback to default implementation"
+        )
         queries = self.convert_conv_history_to_query(model, conversations)  # type: ignore
-        return model.encode_queries(queries, prompt_name=prompt_name, **kwargs)  # type: ignore
+        return model.encode(
+            queries, task_name=task_name, prompt_type=PromptType.query, **kwargs
+        )  # type: ignore
 
     @staticmethod
     def convert_conv_history_to_query(
@@ -334,45 +364,29 @@ class DenseRetrievalExactSearch:
 
 
 class DRESModel:
-    """Dense Retrieval Exact Search (DRES) requires an encode_queries & encode_corpus method.
+    """Dense Retrieval Exact Search (DRES).
     This class converts a model with just an .encode method into DRES format.
     """
 
     mteb_model_meta: ModelMeta | None
 
     def __init__(self, model, **kwargs):
-        self.model = model
+        self.model: Any = model
         self.use_sbert_model = isinstance(model, SentenceTransformer)
+        self.device = model.device if hasattr(model, "device") else None
         self.save_corpus_embeddings = kwargs.get("save_corpus_embeddings", False)
         self.corpus_embeddings = {}
 
-    def encode_queries(
-        self, queries: List[str], *, prompt_name: str, batch_size: int, **kwargs
-    ):
-        if self.use_sbert_model:
-            if isinstance(self.model._first_module(), Transformer):
-                logger.info(
-                    f"Queries will be truncated to {self.model.get_max_seq_length()} tokens."
-                )
-            elif isinstance(self.model._first_module(), WordEmbeddings):
-                logger.warning(
-                    "Queries will not be truncated. This could lead to memory issues. In that case please lower the batch_size."
-                )
-
-        return model_encode(
-            queries,
-            model=self.model,
-            prompt_name=prompt_name,
-            batch_size=batch_size,
-            **kwargs,
-        )
+        if hasattr(self.model, "similarity") and callable(self.model.similarity):
+            self.similarity = self.model.similarity
 
     def encode_corpus(
         self,
-        corpus: List[Dict[str, str]],
-        prompt_name: str,
+        corpus: list[dict[str, str]],
+        task_name: str,
         batch_size: int,
-        request_qid: Union[str, None] = None,
+        prompt_type: PromptType = PromptType.passage,
+        request_qid: str | None = None,
         **kwargs,
     ):
         if (
@@ -382,25 +396,11 @@ class DRESModel:
         ):
             return self.corpus_embeddings[request_qid]
 
-        if isinstance(corpus, dict):
-            sentences = [
-                (corpus["title"][i] + " " + corpus["text"][i]).strip()
-                if "title" in corpus
-                else corpus["text"][i].strip()
-                for i in range(len(corpus["text"]))
-            ]
-        else:
-            sentences = [
-                (doc["title"] + " " + doc["text"]).strip()
-                if "title" in doc
-                else doc["text"].strip()
-                for doc in corpus
-            ]
-
-        corpus_embeddings = model_encode(
+        sentences = corpus_to_str(corpus)
+        corpus_embeddings = self.model.encode(
             sentences,
-            model=self.model,
-            prompt_name=prompt_name,
+            task_name=task_name,
+            prompt_type=prompt_type,
             batch_size=batch_size,
             **kwargs,
         )
@@ -409,19 +409,23 @@ class DRESModel:
             self.corpus_embeddings[request_qid] = corpus_embeddings
         return corpus_embeddings
 
-    def encode(self, sentences: List[str], prompt_name: str, **kwargs):
-        return self.encode_queries(sentences, prompt_name=prompt_name, **kwargs)
+    def encode(
+        self,
+        sentences: list[str],
+        task_name: str,
+        prompt_type: PromptType | None = None,
+        **kwargs,
+    ):
+        if prompt_type and prompt_type == PromptType.passage:
+            return self.encode_corpus(
+                sentences, task_name, prompt_type=prompt_type, **kwargs
+            )
+        return self.model.encode(
+            sentences, task_name=task_name, prompt_type=prompt_type, **kwargs
+        )
 
 
-def is_dres_compatible(model):
-    for method in ["encode_queries", "encode_corpus"]:
-        op = getattr(model, method, None)
-        if not (callable(op)):
-            return False
-    return True
-
-
-def is_cross_encoder_compatible(model):
+def is_cross_encoder_compatible(model) -> bool:
     op = getattr(model, "predict", None)
     return callable(op)
 
@@ -430,10 +434,9 @@ def is_cross_encoder_compatible(model):
 class RetrievalEvaluator(Evaluator):
     def __init__(
         self,
-        retriever=None,
+        retriever,
         task_name: str | None = None,
-        k_values: List[int] = [1, 3, 5, 10, 20, 100, 1000],
-        score_function: str = "cos_sim",
+        k_values: list[int] = [1, 3, 5, 10, 20, 100, 1000],
         encode_kwargs: dict[str, Any] = {},
         **kwargs,
     ):
@@ -447,17 +450,7 @@ class RetrievalEvaluator(Evaluator):
                 retriever, encode_kwargs=encode_kwargs, **kwargs
             )
             self.is_cross_encoder = True
-        elif is_dres_compatible(retriever):
-            logger.info(
-                "The custom encode_queries and encode_corpus functions of the model will be used"
-            )
-            self.retriever = DenseRetrievalExactSearch(
-                retriever, encode_kwargs=encode_kwargs, **kwargs
-            )
         else:
-            logger.info(
-                "The model does not have the optional encode_queries and encode_corpus functions. Wrapping it in DRESModel."
-            )
             self.retriever = DenseRetrievalExactSearch(
                 DRESModel(retriever), encode_kwargs=encode_kwargs, **kwargs
             )
@@ -465,13 +458,12 @@ class RetrievalEvaluator(Evaluator):
         self.top_k = (
             max(k_values) if "top_k" not in kwargs else kwargs["top_k"]
         )  # can lower it if reranking
-        self.score_function = score_function
         self.task_name = task_name
 
     def __call__(
         self,
         corpus: dict[str, dict[str, str]],
-        queries: dict[str, Union[str, List[str]]],
+        queries: dict[str, str | list[str]],
     ) -> dict[str, dict[str, float]]:
         if not self.retriever:
             raise ValueError("Model/Technique has not been provided!")
@@ -479,32 +471,31 @@ class RetrievalEvaluator(Evaluator):
         if self.is_cross_encoder:
             return self.retriever.search_cross_encoder(corpus, queries, self.top_k)
         elif (
-            hasattr(self.retriever.model, "mteb_model_meta")
-            and self.retriever.model.mteb_model_meta.name == "bm25s"
+            hasattr(self.retriever.model.model, "mteb_model_meta")
+            and self.retriever.model.model.mteb_model_meta.name == "bm25s"
         ):
-            return self.retriever.model.search(
+            return self.retriever.model.model.search(
                 corpus,
                 queries,
                 self.top_k,
-                self.score_function,
-                prompt_name=self.task_name,  # type: ignore
+                score_function="bm25",
+                task_name=self.task_name,  # type: ignore
             )
         else:
             return self.retriever.search(
                 corpus,
                 queries,
                 self.top_k,
-                self.score_function,
-                prompt_name=self.task_name,  # type: ignore
+                task_name=self.task_name,  # type: ignore
             )
 
     @staticmethod
     def evaluate(
         qrels: dict[str, dict[str, int]],
         results: dict[str, dict[str, float]],
-        k_values: List[int],
+        k_values: list[int],
         ignore_identical_ids: bool = False,
-    ) -> Tuple[
+    ) -> tuple[
         dict[str, float],
         dict[str, float],
         dict[str, float],
@@ -572,10 +563,10 @@ class RetrievalEvaluator(Evaluator):
     def evaluate_custom(
         qrels: dict[str, dict[str, int]],
         results: dict[str, dict[str, float]],
-        k_values: List[int],
+        k_values: list[int],
         metric: str,
         output_type: str = "all",
-    ) -> Tuple[Dict[str, float], Dict[str, float]]:
+    ) -> tuple[dict[str, float], dict[str, float]]:
         if metric.lower() in ["mrr", "mrr@k", "mrr_cut"]:
             metric_scores = mrr(qrels, results, k_values, output_type)
 
@@ -603,7 +594,7 @@ class RetrievalEvaluator(Evaluator):
     def evaluate_abstention(
         results: dict[str, dict[str, float]],
         metric_scores: dict[str, list[float]],
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """Computes normalized Area Under the Curve on a set of evaluated instances as presented in the paper https://arxiv.org/abs/2402.12997"""
         all_sim_scores = [list(results[qid].values()) for qid in list(results.keys())]
         all_conf_scores = [

@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskClassification
 
 
 class NewsClassification(AbsTaskClassification):
@@ -26,7 +25,7 @@ class NewsClassification(AbsTaskClassification):
         ),  # Estimated range for the collection of news articles
         domains=["News", "Written"],
         task_subtypes=["Topic classification"],
-        license="Apache 2.0",
+        license="apache-2.0",
         annotations_creators="expert-annotated",
         dialect=["eng-Latn-US", "en-Latn-GB", "en-Latn-AU"],
         sample_creation="found",
@@ -42,8 +41,4 @@ class NewsClassification(AbsTaskClassification):
         volume = {28},
         year = {2015}
         }""",
-        descriptive_stats={
-            "n_samples": {"test": 7600},
-            "avg_character_length": {"test": 235.29},
-        },
     )

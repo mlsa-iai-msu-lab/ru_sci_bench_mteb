@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from mteb.abstasks import AbsTaskClassification
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
 
@@ -23,7 +23,7 @@ class PoemSentimentClassification(AbsTaskClassification):
         date=("1700-01-01", "1900-01-01"),
         domains=["Reviews", "Written"],
         task_subtypes=["Sentiment/Hate speech"],
-        license="CC-BY-4.0",
+        license="cc-by-4.0",
         annotations_creators="human-annotated",
         dialect=["eng-Latn-US", "en-Latn-GB"],
         sample_creation="found",
@@ -37,10 +37,6 @@ class PoemSentimentClassification(AbsTaskClassification):
       primaryClass={cs.CL}
 }
 """,
-        descriptive_stats={
-            "n_samples": {"validation": 105, "test": 104},
-            "avg_character_length": {"validation": 45.3, "test": 42.4},
-        },
     )
 
     def dataset_transform(self):

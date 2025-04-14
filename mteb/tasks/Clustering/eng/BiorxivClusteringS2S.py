@@ -31,10 +31,8 @@ class BiorxivClusteringS2SFast(AbsTaskClusteringFast):
         dialect=[],
         sample_creation="created",
         bibtex_citation="",
-        descriptive_stats={
-            "n_samples": {"test": 2151},
-            "avg_character_length": {"test": 101.7},
-        },
+        prompt="Identify the main category of Biorxiv papers based on the titles",
+        adapted_from=["BiorxivClusteringS2S"],
     )
 
     def dataset_transform(self):
@@ -66,8 +64,5 @@ class BiorxivClusteringS2S(AbsTaskClustering):
         dialect=[],
         sample_creation="created",
         bibtex_citation="",
-        descriptive_stats={
-            "n_samples": {"test": 75000},
-            "avg_character_length": {"test": 101.6},
-        },
+        prompt="Identify the main category of Biorxiv papers based on the titles",
     )

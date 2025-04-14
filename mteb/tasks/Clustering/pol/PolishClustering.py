@@ -20,7 +20,7 @@ class EightTagsClustering(AbsTaskClustering):
     metadata = TaskMetadata(
         name="EightTagsClustering",
         description="Clustering of headlines from social media posts in Polish belonging to 8 categories: film, history, "
-        "food, medicine, motorization, work, sport and technology.",
+        + "food, medicine, motorization, work, sport and technology.",
         reference="https://aclanthology.org/2020.lrec-1.207.pdf",
         dataset={
             "path": "PL-MTEB/8tags-clustering",
@@ -35,15 +35,15 @@ class EightTagsClustering(AbsTaskClustering):
         date=("2019-01-01", "2020-05-01"),
         domains=["Social", "Written"],
         task_subtypes=["Topic classification", "Thematic clustering"],
-        license="GPL-3.0",
+        license="gpl-3.0",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
         bibtex_citation="""@inproceedings{dadas-etal-2020-evaluation,
             title = "Evaluation of Sentence Representations in {P}olish",
             author = "Dadas, Slawomir  and
-            Pere{\l}kiewicz, Micha{\l}  and
-            Po{\'s}wiata, Rafa{\l}",
+            Pere{\\l}kiewicz, Micha{\\l}  and
+            Po{\\'s}wiata, Rafa{\\l}",
             editor = "Calzolari, Nicoletta  and
             B{\'e}chet, Fr{\'e}d{\'e}ric  and
             Blache, Philippe  and
@@ -54,7 +54,7 @@ class EightTagsClustering(AbsTaskClustering):
             Isahara, Hitoshi  and
             Maegaard, Bente  and
             Mariani, Joseph  and
-            Mazo, H{\'e}l{\`e}ne  and
+            Mazo, H{\\'e}l{\\`e}ne  and
             Moreno, Asuncion  and
             Odijk, Jan  and
             Piperidis, Stelios",
@@ -69,10 +69,6 @@ class EightTagsClustering(AbsTaskClustering):
             language = "English",
             ISBN = "979-10-95546-34-4",
         }""",
-        descriptive_stats={
-            "n_samples": {"test": 49373},
-            "avg_character_length": {"test": 78.23},
-        },
     )
 
 
@@ -83,7 +79,7 @@ class EightTagsClusteringFast(AbsTaskClusteringFast):
     metadata = TaskMetadata(
         name="EightTagsClustering.v2",
         description="Clustering of headlines from social media posts in Polish belonging to 8 categories: film, history, "
-        "food, medicine, motorization, work, sport and technology.",
+        + "food, medicine, motorization, work, sport and technology.",
         reference="https://aclanthology.org/2020.lrec-1.207.pdf",
         dataset={
             "path": "PL-MTEB/8tags-clustering",
@@ -98,17 +94,17 @@ class EightTagsClusteringFast(AbsTaskClusteringFast):
         date=("2019-01-01", "2020-05-01"),
         domains=["Social", "Written"],
         task_subtypes=["Topic classification", "Thematic clustering"],
-        license="GPL-3.0",
+        license="gpl-3.0",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
         bibtex_citation="""@inproceedings{dadas-etal-2020-evaluation,
             title = "Evaluation of Sentence Representations in {P}olish",
             author = "Dadas, Slawomir  and
-            Pere{\l}kiewicz, Micha{\l}  and
-            Po{\'s}wiata, Rafa{\l}",
+            Pere{\\l}kiewicz, Micha{\\l}  and
+            Po{\\'s}wiata, Rafa{\\l}",
             editor = "Calzolari, Nicoletta  and
-            B{\'e}chet, Fr{\'e}d{\'e}ric  and
+            B{\\'e}chet, Fr{\\'e}d{\\'e}ric  and
             Blache, Philippe  and
             Choukri, Khalid  and
             Cieri, Christopher  and
@@ -117,7 +113,7 @@ class EightTagsClusteringFast(AbsTaskClusteringFast):
             Isahara, Hitoshi  and
             Maegaard, Bente  and
             Mariani, Joseph  and
-            Mazo, H{\'e}l{\`e}ne  and
+            Mazo, H{\\'e}l{\\`e}ne  and
             Moreno, Asuncion  and
             Odijk, Jan  and
             Piperidis, Stelios",
@@ -132,14 +128,11 @@ class EightTagsClusteringFast(AbsTaskClusteringFast):
             language = "English",
             ISBN = "979-10-95546-34-4",
         }""",
-        descriptive_stats={
-            "n_samples": {"test": N_SAMPLES},
-            "avg_character_length": {"test": 78.73},
-        },
+        adapted_from=["EightTagsClustering"],
     )
 
     def dataset_transform(self):
-        ds = dict()
+        ds = {}
         for split in self.metadata.eval_splits:
             labels = list(chain.from_iterable(self.dataset[split]["labels"]))
             sentences = list(chain.from_iterable(self.dataset[split]["sentences"]))
@@ -161,7 +154,7 @@ class PlscClusteringS2S(AbsTaskClusteringFast):
     metadata = TaskMetadata(
         name="PlscClusteringS2S",
         description="Clustering of Polish article titles from Library of Science (https://bibliotekanauki.pl/), either "
-        "on the scientific field or discipline.",
+        + "on the scientific field or discipline.",
         reference="https://huggingface.co/datasets/rafalposwiata/plsc",
         dataset={
             "path": "PL-MTEB/plsc-clustering-s2s",
@@ -181,10 +174,6 @@ class PlscClusteringS2S(AbsTaskClusteringFast):
         dialect=[],
         sample_creation="found",
         bibtex_citation="",
-        descriptive_stats={
-            "n_samples": {"test": 17534},
-            "avg_character_length": {"test": 84.34},
-        },
     )
 
 
@@ -192,7 +181,7 @@ class PlscClusteringS2SFast(AbsTaskClusteringFast):
     metadata = TaskMetadata(
         name="PlscClusteringS2S.v2",
         description="Clustering of Polish article titles from Library of Science (https://bibliotekanauki.pl/), either "
-        "on the scientific field or discipline.",
+        + "on the scientific field or discipline.",
         reference="https://huggingface.co/datasets/rafalposwiata/plsc",
         dataset={
             "path": "PL-MTEB/plsc-clustering-s2s",
@@ -212,14 +201,11 @@ class PlscClusteringS2SFast(AbsTaskClusteringFast):
         dialect=[],
         sample_creation="found",
         bibtex_citation="",
-        descriptive_stats={
-            "n_samples": {"test": N_SAMPLES},
-            "avg_character_length": {"test": 84.34},
-        },
+        adapted_from=["PlscClusteringS2S"],
     )
 
     def dataset_transform(self):
-        ds = dict()
+        ds = {}
         for split in self.metadata.eval_splits:
             labels = self.dataset[split]["labels"]
             sentences = self.dataset[split]["sentences"]
@@ -250,7 +236,7 @@ class PlscClusteringP2P(AbsTaskClusteringFast):
     metadata = TaskMetadata(
         name="PlscClusteringP2P",
         description="Clustering of Polish article titles+abstracts from Library of Science "
-        "(https://bibliotekanauki.pl/), either on the scientific field or discipline.",
+        + "(https://bibliotekanauki.pl/), either on the scientific field or discipline.",
         reference="https://huggingface.co/datasets/rafalposwiata/plsc",
         dataset={
             "path": "PL-MTEB/plsc-clustering-p2p",
@@ -270,10 +256,6 @@ class PlscClusteringP2P(AbsTaskClusteringFast):
         dialect=[],
         sample_creation="found",
         bibtex_citation="",
-        descriptive_stats={
-            "n_samples": {"test": 17537},
-            "avg_character_length": {"test": 1023.21},
-        },
     )
 
 
@@ -281,7 +263,7 @@ class PlscClusteringP2PFast(AbsTaskClusteringFast):
     metadata = TaskMetadata(
         name="PlscClusteringP2P.v2",
         description="Clustering of Polish article titles+abstracts from Library of Science "
-        "(https://bibliotekanauki.pl/), either on the scientific field or discipline.",
+        + "(https://bibliotekanauki.pl/), either on the scientific field or discipline.",
         reference="https://huggingface.co/datasets/rafalposwiata/plsc",
         dataset={
             "path": "PL-MTEB/plsc-clustering-p2p",
@@ -301,14 +283,11 @@ class PlscClusteringP2PFast(AbsTaskClusteringFast):
         dialect=[],
         sample_creation="found",
         bibtex_citation="",
-        descriptive_stats={
-            "n_samples": {"test": N_SAMPLES},
-            "avg_character_length": {"test": 1023.21},
-        },
+        adapted_from=["PlscClusteringP2P"],
     )
 
     def dataset_transform(self):
-        ds = dict()
+        ds = {}
         for split in self.metadata.eval_splits:
             labels = self.dataset[split]["labels"]
             sentences = self.dataset[split]["sentences"]

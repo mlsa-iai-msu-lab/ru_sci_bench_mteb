@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import warnings
 from typing import Any
 
 import numpy as np
@@ -15,7 +16,6 @@ from sklearn.neighbors import KNeighborsClassifier
 from torch import Tensor
 
 from mteb.encoder_interface import Encoder
-from mteb.evaluation.evaluators.model_encode import model_encode
 
 from .Evaluator import Evaluator
 
@@ -41,6 +41,10 @@ class kNNClassificationEvaluator(Evaluator):
     ):
         super().__init__(**kwargs)
         if limit is not None:
+            warnings.warn(
+                "Limiting the number of samples with `limit` for evaluation will be removed in v2.0.0.",
+                DeprecationWarning,
+            )
             sentences_train = sentences_train[:limit]
             y_train = y_train[:limit]
             sentences_test = sentences_test[:limit]
@@ -63,17 +67,15 @@ class kNNClassificationEvaluator(Evaluator):
         max_accuracy = 0
         max_f1 = 0
         max_ap = 0
-        X_train = model_encode(
+        X_train = model.encode(
             self.sentences_train,
-            model=model,
-            prompt_name=self.task_name,
+            task_name=self.task_name,
             **self.encode_kwargs,
         )
         if test_cache is None:
-            X_test = model_encode(
+            X_test = model.encode(
                 self.sentences_test,
-                model=model,
-                prompt_name=self.task_name,
+                task_name=self.task_name,
                 **self.encode_kwargs,
             )
             test_cache = X_test
@@ -116,6 +118,11 @@ class kNNClassificationEvaluatorPytorch(Evaluator):
     ):
         super().__init__(**kwargs)
         if limit is not None:
+            warnings.warn(
+                "Limiting the number of samples with `limit` for evaluation will be removed in v2.0.0.",
+                DeprecationWarning,
+            )
+
             sentences_train = sentences_train[:limit]
             y_train = y_train[:limit]
             sentences_test = sentences_test[:limit]
@@ -139,18 +146,16 @@ class kNNClassificationEvaluatorPytorch(Evaluator):
         max_accuracy = 0
         max_f1 = 0
         max_ap = 0
-        X_train = model_encode(
+        X_train = model.encode(
             self.sentences_train,
-            model=model,
-            prompt_name=self.task_name,
+            task_name=self.task_name,
             **self.encode_kwargs,
         )
 
         if test_cache is None:
-            X_test = model_encode(
+            X_test = model.encode(
                 self.sentences_test,
-                model=model,
-                prompt_name=self.task_name,
+                task_name=self.task_name,
                 **self.encode_kwargs,
             )
             test_cache = X_test
@@ -273,6 +278,11 @@ class logRegClassificationEvaluator(Evaluator):
             self.encode_kwargs["batch_size"] = 32
 
         if limit is not None:
+            warnings.warn(
+                "Limiting the number of samples with `limit` for evaluation will be removed in v2.0.0.",
+                DeprecationWarning,
+            )
+
             sentences_train = sentences_train[:limit]
             y_train = y_train[:limit]
             sentences_test = sentences_test[:limit]
@@ -293,17 +303,15 @@ class logRegClassificationEvaluator(Evaluator):
             max_iter=self.max_iter,
             verbose=1 if logger.isEnabledFor(logging.DEBUG) else 0,
         )
-        X_train = model_encode(
+        X_train = model.encode(
             self.sentences_train,
-            model=model,
-            prompt_name=self.task_name,
+            task_name=self.task_name,
             **self.encode_kwargs,
         )
         if test_cache is None:
-            X_test = model_encode(
+            X_test = model.encode(
                 self.sentences_test,
-                model=model,
-                prompt_name=self.task_name,
+                task_name=self.task_name,
                 **self.encode_kwargs,
             )
             test_cache = X_test

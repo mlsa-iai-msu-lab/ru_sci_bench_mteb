@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskClassification
 
 
 class DBpediaClassification(AbsTaskClassification):
@@ -40,10 +39,6 @@ class DBpediaClassification(AbsTaskClassification):
             year = {2015}
             }
         """,
-        descriptive_stats={
-            "n_samples": {"test": 70000},
-            "avg_character_length": {"test": 281.40},
-        },
     )
 
     def dataset_transform(self):

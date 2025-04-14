@@ -10,6 +10,9 @@ from .eng.ArXivHierarchicalClustering import *
 from .eng.BigPatentClustering import *
 from .eng.BiorxivClusteringP2P import *
 from .eng.BiorxivClusteringS2S import *
+from .eng.BuiltBenchClusteringP2P import *
+from .eng.BuiltBenchClusteringS2S import *
+from .eng.ClusTrecCovid import *
 from .eng.MedrxivClusteringP2P import *
 from .eng.MedrxivClusteringS2S import *
 from .eng.RedditClustering import *
@@ -18,11 +21,16 @@ from .eng.StackExchangeClustering import *
 from .eng.StackExchangeClusteringP2P import *
 from .eng.TwentyNewsgroupsClustering import *
 from .eng.WikiCitiesClustering import *
+from .eng.WikipediaChemistrySpecialtiesClustering import *
+from .eng.WikipediaChemistryTopicsClustering import *
+from .fas.FaMTEBClustering import *
 from .fra.AlloProfClusteringP2P import *
 from .fra.AlloProfClusteringS2S import *
 from .fra.HALClusteringS2S import *
 from .jpn.LivedoorNewsClustering import *
 from .jpn.MewsC16JaClustering import *
+from .kor.KlueMrcDomainClustering import *
+from .kor.KlueYnatMrcCategoryClustering import *
 from .multilingual.IndicReviewsClusteringP2P import *
 from .multilingual.MasakhaNEWSClusteringP2P import *
 from .multilingual.MasakhaNEWSClusteringS2S import *

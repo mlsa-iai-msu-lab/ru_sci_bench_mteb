@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from mteb.abstasks import AbsTaskClassification
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
 
@@ -19,13 +19,13 @@ class SweRecClassification(AbsTaskClassification):
         eval_splits=["test"],
         eval_langs=["swe-Latn"],
         main_score="accuracy",
-        date=None,
-        domains=None,
-        task_subtypes=None,
-        license=None,
-        annotations_creators=None,
-        dialect=None,
-        sample_creation=None,
+        date=("2023-01-01", "2023-12-31"),  # based on the publication date
+        domains=["Reviews", "Written"],
+        task_subtypes=["Sentiment/Hate speech"],
+        license="cc-by-sa-4.0",
+        annotations_creators="derived",
+        dialect=[],
+        sample_creation="found",
         bibtex_citation="""@inproceedings{nielsen-2023-scandeval,
     title = "{S}cand{E}val: A Benchmark for {S}candinavian Natural Language Processing",
     author = "Nielsen, Dan",
@@ -40,8 +40,5 @@ class SweRecClassification(AbsTaskClassification):
     pages = "185--201",
 }
 """,
-        descriptive_stats={
-            "n_samples": {"test": 1024},
-            "avg_character_length": {"test": 318.8},
-        },
+        prompt="Classify Swedish reviews by sentiment",
     )

@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import datasets
 
+from mteb.abstasks.AbsTaskPairClassification import AbsTaskPairClassification
+from mteb.abstasks.MultilingualTask import MultilingualTask
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskPairClassification, MultilingualTask
 
 _LANGUAGES = {
     "de": ["deu-Latn"],
@@ -40,17 +40,13 @@ class OpusparcusPC(AbsTaskPairClassification, MultilingualTask):
         dialect=[],
         sample_creation="created",
         bibtex_citation="""@misc{creutz2018open,
-      title={Open Subtitles Paraphrase Corpus for Six Languages}, 
+      title={Open Subtitles Paraphrase Corpus for Six Languages},
       author={Mathias Creutz},
       year={2018},
       eprint={1809.06142},
       archivePrefix={arXiv},
       primaryClass={cs.CL}
 }""",
-        descriptive_stats={
-            "n_samples": {"validation": 10168, "test": 10210},
-            "avg_character_length": {"validation": 24.4, "test": 23.8},
-        },
     )
 
     def load_data(self, **kwargs):

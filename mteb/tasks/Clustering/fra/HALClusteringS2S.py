@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections import Counter
 
 import datasets
@@ -39,14 +41,13 @@ class HALClusteringS2S(AbsTaskClustering):
         dialect=None,
         sample_creation=None,
         bibtex_citation="""@misc{ciancone2024extending,
-      title={Extending the Massive Text Embedding Benchmark to French}, 
+      title={Extending the Massive Text Embedding Benchmark to French},
       author={Mathieu Ciancone and Imene Kerboua and Marion Schaeffer and Wissam Siblini},
       year={2024},
       eprint={2405.20468},
       archivePrefix={arXiv},
       primaryClass={cs.CL}
 }""",
-        descriptive_stats={"n_samples": None, "avg_character_length": None},
     )
 
     def dataset_transform(self):
@@ -82,22 +83,19 @@ class HALClusteringS2SFast(AbsTaskClusteringFast):
         date=("2000-03-29", "2024-05-24"),
         domains=["Academic", "Written"],
         task_subtypes=["Thematic clustering"],
-        license="Apache-2.0",
+        license="apache-2.0",
         annotations_creators="human-annotated",
         dialect=[],
         sample_creation="found",
         bibtex_citation="""@misc{ciancone2024extending,
-      title={Extending the Massive Text Embedding Benchmark to French}, 
+      title={Extending the Massive Text Embedding Benchmark to French},
       author={Mathieu Ciancone and Imene Kerboua and Marion Schaeffer and Wissam Siblini},
       year={2024},
       eprint={2405.20468},
       archivePrefix={arXiv},
       primaryClass={cs.CL}
 }""",
-        descriptive_stats={
-            "n_samples": {"test": NUM_SAMPLES},
-            "avg_character_length": {"test": 86.6},
-        },
+        adapted_from=["HALClusteringS2S"],
     )
 
     def dataset_transform(self):
@@ -109,18 +107,18 @@ class HALClusteringS2SFast(AbsTaskClusteringFast):
         labels_count = Counter(self.dataset["test"]["labels"])
 
         # keep classes with more than 2 samples after stratified_subsampling
-        frequent_labels = set(
+        frequent_labels = {
             label
             for label, count in labels_count.items()
             if count > len(self.dataset["test"]) * 2 / NUM_SAMPLES
-        )
+        }
         self.dataset["test"] = self.dataset["test"].filter(
             lambda row: row["labels"] in frequent_labels
         )
         self.dataset["test"] = self.dataset["test"].cast(
             datasets.Features(
                 sentences=datasets.Value("string"),
-                labels=datasets.ClassLabel(names=sorted(list(frequent_labels))),
+                labels=datasets.ClassLabel(names=sorted(frequent_labels)),
             )
         )
         for split in self.metadata.eval_splits:
@@ -131,5 +129,4 @@ class HALClusteringS2SFast(AbsTaskClusteringFast):
             self.seed,
             self.metadata.eval_splits,
             label="labels",
-            n_samples=NUM_SAMPLES,
         )

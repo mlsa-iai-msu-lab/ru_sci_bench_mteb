@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskSTS import AbsTaskSTS
+from mteb.abstasks.MultilingualTask import MultilingualTask
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskSTS, MultilingualTask
 
 _LANGUAGES = {
     "en-as": ["eng-Latn", "asm-Beng"],
@@ -56,7 +56,7 @@ class IndicCrosslingualSTS(AbsTaskSTS, MultilingualTask):
             "Spoken",
         ],
         task_subtypes=[],
-        license="CC0",
+        license="cc0-1.0",
         annotations_creators="expert-annotated",
         dialect=[],
         sample_creation="created",
@@ -70,13 +70,9 @@ class IndicCrosslingualSTS(AbsTaskSTS, MultilingualTask):
     month = {02},
     issn = {2307-387X},
     doi = {10.1162/tacl_a_00452},
-    url = {https://doi.org/10.1162/tacl\_a\_00452},
-    eprint = {https://direct.mit.edu/tacl/article-pdf/doi/10.1162/tacl\_a\_00452/1987010/tacl\_a\_00452.pdf},
+    url = {https://doi.org/10.1162/tacl\\_a\\_00452}, 
+    eprint = {https://direct.mit.edu/tacl/article-pdf/doi/10.1162/tacl\\_a\\_00452/1987010/tacl\\_a\\_00452.pdf},
 }""",
-        descriptive_stats={
-            "n_samples": {"test": 10020},
-            "avg_character_length": {"test": 76.22},
-        },
     )
 
     @property

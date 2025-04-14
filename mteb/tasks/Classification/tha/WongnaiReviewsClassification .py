@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
@@ -21,7 +23,7 @@ class WongnaiReviewsClassification(AbsTaskClassification):
         dialect=[],
         domains=["Reviews", "Written"],
         task_subtypes=[],
-        license="LGPL-3.0",
+        license="lgpl-3.0",
         annotations_creators="derived",
         sample_creation="found",
         bibtex_citation="""
@@ -35,10 +37,6 @@ class WongnaiReviewsClassification(AbsTaskClassification):
             doi     = {10.5281/zenodo.3852912},
             url     = {https://doi.org/10.5281/zenodo.3852912}
         }""",
-        descriptive_stats={
-            "n_samples": {"test": 2048},
-            "avg_character_length": {"test": 540.3717},
-        },
     )
 
     def dataset_transform(self):

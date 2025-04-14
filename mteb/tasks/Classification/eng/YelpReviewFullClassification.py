@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskClassification
 
 
 class YelpReviewFullClassification(AbsTaskClassification):
@@ -23,7 +22,7 @@ class YelpReviewFullClassification(AbsTaskClassification):
         date=("2015-01-01", "2015-12-31"),  # reviews from 2015
         domains=["Reviews", "Written"],
         task_subtypes=["Sentiment/Hate speech"],
-        license="Other",
+        license="https://huggingface.co/datasets/Yelp/yelp_review_full#licensing-information",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
@@ -40,15 +39,9 @@ class YelpReviewFullClassification(AbsTaskClassification):
         year = {2015}
         }
         """,
-        descriptive_stats={"n_samples": {"test": 50000}, "avg_character_length": {}},
     )
 
-    @property
-    def metadata_dict(self) -> dict[str, str]:
-        metadata_dict = dict(self.metadata)
-        metadata_dict["n_experiments"] = 10
-        metadata_dict["samples_per_label"] = 128
-        return metadata_dict
+    samples_per_label = 128
 
     def dataset_transform(self):
         self.dataset = self.stratified_subsampling(

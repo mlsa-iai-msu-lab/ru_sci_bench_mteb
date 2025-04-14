@@ -35,14 +35,12 @@ class MedrxivClusteringP2PFast(AbsTaskClusteringFast):
         dialect=[],
         sample_creation="created",
         bibtex_citation="",
-        descriptive_stats={
-            "n_samples": {"test": 1500},
-            "avg_character_length": {"test": 1984.7},
-        },
+        prompt="Identify the main category of Medrxiv papers based on the titles and abstracts",
+        adapted_from=["MedrxivClusteringP2P"],
     )
 
     def dataset_transform(self):
-        ds = dict()
+        ds = {}
         for split in self.metadata.eval_splits:
             labels = list(itertools.chain.from_iterable(self.dataset[split]["labels"]))
             sentences = list(
@@ -77,8 +75,5 @@ class MedrxivClusteringP2P(AbsTaskClustering):
         dialect=[],
         sample_creation="created",
         bibtex_citation="",
-        descriptive_stats={
-            "n_samples": {"test": 37500},
-            "avg_character_length": {"test": 1981.2},
-        },
+        prompt="Identify the main category of Medrxiv papers based on the titles and abstracts",
     )

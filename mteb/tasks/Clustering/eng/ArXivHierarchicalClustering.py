@@ -33,19 +33,15 @@ class ArXivHierarchicalClusteringP2P(AbsTaskClusteringFast):
         date=("1991-01-01", "2021-01-01"),  # 1991-01-01 is the first arxiv paper
         domains=["Academic", "Written"],
         task_subtypes=[],
-        license="CC0",
+        license="cc0-1.0",
         annotations_creators="derived",
         dialect=["Thematic clustering"],
         sample_creation="found",
-        bibtex_citation="@misc{arXiv.org e-Print archive, url={https://arxiv.org/} }",
-        descriptive_stats={
-            "n_samples": {"test": N_SAMPLES},
-            "avg_character_length": {"test": 1009.98},
-        },
+        bibtex_citation="",
     )
 
     def dataset_transform(self):
-        ds = dict()
+        ds = {}
         for split in self.metadata.eval_splits:
             labels = list(itertools.chain.from_iterable(self.dataset[split]["labels"]))
             sentences = list(
@@ -77,19 +73,15 @@ class ArXivHierarchicalClusteringS2S(AbsTaskClusteringFast):
         date=("1991-01-01", "2021-01-01"),  # 1991-01-01 is the first arxiv paper
         domains=["Academic", "Written"],
         task_subtypes=["Thematic clustering"],
-        license="CC0",
+        license="cc0-1.0",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
-        bibtex_citation="@misc{arXiv.org e-Print archive, url={https://arxiv.org/} }",
-        descriptive_stats={
-            "n_samples": {"test": N_SAMPLES},
-            "avg_character_length": {"test": 1009.98},
-        },
+        bibtex_citation="",
     )
 
     def dataset_transform(self):
-        ds = dict()
+        ds = {}
         for split in self.metadata.eval_splits:
             labels = list(itertools.chain.from_iterable(self.dataset[split]["labels"]))
             sentences = list(

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from mteb.abstasks.MultilingualTask import MultilingualTask
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
-from ....abstasks import MultilingualTask
 from ....abstasks.AbsTaskPairClassification import AbsTaskPairClassification
 
 
@@ -33,22 +33,18 @@ class PawsXPairClassification(MultilingualTask, AbsTaskPairClassification):
         date=("2016-01-01", "2018-12-31"),
         domains=["Web", "Encyclopaedic", "Written"],
         task_subtypes=["Textual Entailment"],
-        license="Custom (commercial)",
+        license="https://huggingface.co/datasets/google-research-datasets/paws-x#licensing-information",
         annotations_creators="human-annotated",
         dialect=[],
         sample_creation="human-translated",
         bibtex_citation="""@misc{yang2019pawsx,
-      title={PAWS-X: A Cross-lingual Adversarial Dataset for Paraphrase Identification}, 
+      title={PAWS-X: A Cross-lingual Adversarial Dataset for Paraphrase Identification},
       author={Yinfei Yang and Yuan Zhang and Chris Tar and Jason Baldridge},
       year={2019},
       eprint={1908.11828},
       archivePrefix={arXiv},
       primaryClass={cs.CL}
 }""",
-        descriptive_stats={
-            "n_samples": {"validation": 14000, "test": 14000},
-            "avg_character_length": {"validation": 91.2, "test": 91.1},
-        },
     )
 
     def dataset_transform(self):

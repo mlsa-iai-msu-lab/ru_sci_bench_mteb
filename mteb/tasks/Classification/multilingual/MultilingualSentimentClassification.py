@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from mteb.abstasks import AbsTaskClassification, MultilingualTask, TaskMetadata
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
+from mteb.abstasks.MultilingualTask import MultilingualTask
+from mteb.abstasks.TaskMetadata import TaskMetadata
 
 _LANGUAGES = {
     "urd": ["urd-Arab"],
@@ -58,7 +60,7 @@ class MultilingualSentimentClassification(AbsTaskClassification, MultilingualTas
         date=("2022-08-01", "2022-08-01"),
         domains=["Reviews", "Written"],
         task_subtypes=["Sentiment/Hate speech"],
-        license="Not specified",
+        license="not specified",
         annotations_creators="derived",
         dialect=["ar-dz"],
         sample_creation="found",
@@ -87,10 +89,6 @@ class MultilingualSentimentClassification(AbsTaskClassification, MultilingualTas
             pages = "89--95",
         }
         """,
-        descriptive_stats={
-            "n_samples": {"test": 7000},
-            "avg_character_length": {"test": 56},
-        },
     )
 
     def dataset_transform(self):

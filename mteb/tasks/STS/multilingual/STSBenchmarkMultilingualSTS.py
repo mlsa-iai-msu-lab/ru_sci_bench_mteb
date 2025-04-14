@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskSTS import AbsTaskSTS
+from mteb.abstasks.MultilingualTask import MultilingualTask
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskSTS, MultilingualTask
 
 _LANGUAGES = {
     "en": ["eng-Latn"],
@@ -29,8 +29,8 @@ class STSBenchmarkMultilingualSTS(AbsTaskSTS, MultilingualTask):
             "revision": "29afa2569dcedaaa2fe6a3dcfebab33d28b82e8c",
         },
         description=(
-            "Semantic Textual Similarity Benchmark (STSbenchmark) dataset,"
-            "but translated using DeepL API."
+            "Semantic Textual Similarity Benchmark (STSbenchmark) dataset, "
+            + "but translated using DeepL API."
         ),
         reference="https://github.com/PhilipMay/stsb-multi-mt/",
         type="STS",
@@ -42,7 +42,7 @@ class STSBenchmarkMultilingualSTS(AbsTaskSTS, MultilingualTask):
         date=("2012-01-01", "2017-12-31"),
         domains=["News", "Social", "Web", "Spoken", "Written"],
         task_subtypes=[],
-        license="Not specified",
+        license="not specified",
         annotations_creators="human-annotated",
         dialect=[],
         sample_creation="machine-translated",
@@ -52,10 +52,6 @@ class STSBenchmarkMultilingualSTS(AbsTaskSTS, MultilingualTask):
         year={2021},
         url={https://github.com/PhilipMay/stsb-multi-mt}
         }""",
-        descriptive_stats={
-            "n_samples": {"dev": 30000, "test": 27580},
-            "avg_character_length": {"dev": 66.5, "test": 56.1},
-        },
     )
 
     @property

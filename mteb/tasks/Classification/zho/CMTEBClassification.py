@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskClassification
 
 
 class TNews(AbsTaskClassification):
@@ -17,7 +16,7 @@ class TNews(AbsTaskClassification):
         type="Classification",
         category="s2s",
         modalities=["text"],
-        eval_splits=["validation", "test"],
+        eval_splits=["validation"],
         eval_langs=["cmn-Hans"],
         main_score="accuracy",
         date=None,
@@ -70,14 +69,10 @@ class TNews(AbsTaskClassification):
  doi = "10.18653/v1/2020.coling-main.419",
  pages = "4762--4772",
 }""",
-        descriptive_stats={"n_samples": None, "avg_character_length": None},
+        prompt="Classify the fine-grained category of the given news title",
     )
 
-    @property
-    def metadata_dict(self) -> dict[str, str]:
-        metadata_dict = super().metadata_dict
-        metadata_dict["samples_per_label"] = 32
-        return metadata_dict
+    samples_per_label = 32
 
 
 class IFlyTek(AbsTaskClassification):
@@ -92,7 +87,7 @@ class IFlyTek(AbsTaskClassification):
         type="Classification",
         category="s2s",
         modalities=["text"],
-        eval_splits=["validation", "test"],
+        eval_splits=["validation"],
         eval_langs=["cmn-Hans"],
         main_score="accuracy",
         date=None,
@@ -146,13 +141,14 @@ class IFlyTek(AbsTaskClassification):
  pages = "4762--4772",
  abstract = "The advent of natural language understanding (NLU) benchmarks for English, such as GLUE and SuperGLUE allows new NLU models to be evaluated across a diverse set of tasks. These comprehensive benchmarks have facilitated a broad range of research and applications in natural language processing (NLP). The problem, however, is that most such benchmarks are limited to English, which has made it difficult to replicate many of the successes in English NLU for other languages. To help remedy this issue, we introduce the first large-scale Chinese Language Understanding Evaluation (CLUE) benchmark. CLUE is an open-ended, community-driven project that brings together 9 tasks spanning several well-established single-sentence/sentence-pair classification tasks, as well as machine reading comprehension, all on original Chinese text. To establish results on these tasks, we report scores using an exhaustive set of current state-of-the-art pre-trained Chinese models (9 in total). We also introduce a number of supplementary datasets and additional tools to help facilitate further progress on Chinese NLU. Our benchmark is released at https://www.cluebenchmarks.com",
 }""",
-        descriptive_stats={"n_samples": None, "avg_character_length": None},
+        prompt="Given an App description text, find the appropriate fine-grained category",
     )
+
+    samples_per_label = 32
 
     @property
     def metadata_dict(self) -> dict[str, str]:
         metadata_dict = super().metadata_dict
-        metadata_dict["samples_per_label"] = 32
         metadata_dict["n_experiments"] = 5
         return metadata_dict
 
@@ -180,14 +176,10 @@ class MultilingualSentiment(AbsTaskClassification):
         dialect=None,
         sample_creation=None,
         bibtex_citation=None,
-        descriptive_stats={"n_samples": None, "avg_character_length": None},
+        prompt="Classify sentiment of the customer review into positive, neutral, or negative",
     )
 
-    @property
-    def metadata_dict(self) -> dict[str, str]:
-        metadata_dict = super().metadata_dict
-        metadata_dict["samples_per_label"] = 32
-        return metadata_dict
+    samples_per_label = 32
 
 
 class JDReview(AbsTaskClassification):
@@ -218,14 +210,10 @@ class JDReview(AbsTaskClassification):
   journal={arXiv preprint arXiv:2309.07597},
   year={2023}
 }""",
-        descriptive_stats={"n_samples": None, "avg_character_length": None},
+        prompt="Classify the customer review for iPhone on e-commerce platform into positive or negative",
     )
 
-    @property
-    def metadata_dict(self) -> dict[str, str]:
-        metadata_dict = super().metadata_dict
-        metadata_dict["samples_per_label"] = 32
-        return metadata_dict
+    samples_per_label = 32
 
 
 class OnlineShopping(AbsTaskClassification):
@@ -256,14 +244,10 @@ class OnlineShopping(AbsTaskClassification):
   journal={arXiv preprint arXiv:2309.07597},
   year={2023}
 }""",
-        descriptive_stats={"n_samples": None, "avg_character_length": None},
+        prompt="Classify the customer review for online shopping into positive or negative",
     )
 
-    @property
-    def metadata_dict(self) -> dict[str, str]:
-        metadata_dict = super().metadata_dict
-        metadata_dict["samples_per_label"] = 32
-        return metadata_dict
+    samples_per_label = 32
 
 
 class Waimai(AbsTaskClassification):
@@ -294,12 +278,7 @@ class Waimai(AbsTaskClassification):
   journal={arXiv preprint arXiv:2309.07597},
   year={2023}
 }""",
-        descriptive_stats={"n_samples": None, "avg_character_length": None},
+        prompt="Classify the customer review from a food takeaway platform into positive or negative",
     )
 
-    @property
-    def metadata_dict(self) -> dict[str, str]:
-        metadata_dict = super().metadata_dict
-        metadata_dict["samples_per_label"] = 32
-
-        return metadata_dict
+    samples_per_label = 32

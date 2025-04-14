@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from mteb.abstasks import AbsTaskMultilabelClassification
+from mteb.abstasks.AbsTaskMultilabelClassification import (
+    AbsTaskMultilabelClassification,
+)
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
 
@@ -11,7 +13,7 @@ class MalteseNewsClassification(AbsTaskMultilabelClassification):
         Articles. The data was collected from the press_mt subset from Korpus
         Malti v4.0. Article contents were cleaned to filter out JavaScript, CSS,
         & repeated non-Maltese sub-headings. The labels are based on the category
-        field from this corpus. 
+        field from this corpus.
         """,
         reference="https://huggingface.co/datasets/MLRS/maltese_news_categories",
         dataset={
@@ -41,10 +43,6 @@ class MalteseNewsClassification(AbsTaskMultilabelClassification):
             year = "2024",
             publisher = "Association for Computational Linguistics",
         }""",
-        descriptive_stats={
-            "n_samples": {"train": 10784, "test": 2297},
-            "avg_character_length": {"train": 1595.63, "test": 1752.1},
-        },
     )
 
     def dataset_transform(self):

@@ -29,23 +29,12 @@ class NFCorpusPL(AbsTaskRetrieval):
         dialect=None,
         sample_creation=None,
         bibtex_citation="""@misc{wojtasik2024beirpl,
-      title={BEIR-PL: Zero Shot Information Retrieval Benchmark for the Polish Language}, 
+      title={BEIR-PL: Zero Shot Information Retrieval Benchmark for the Polish Language},
       author={Konrad Wojtasik and Vadim Shishkin and Kacper Wołowiec and Arkadiusz Janz and Maciej Piasecki},
       year={2024},
       eprint={2305.19840},
       archivePrefix={arXiv},
       primaryClass={cs.IR}
 }""",
-        descriptive_stats={
-            "n_samples": None,
-            "avg_character_length": {
-                "test": {
-                    "average_document_length": 1652.1926782273604,
-                    "average_query_length": 24.390092879256965,
-                    "num_documents": 3633,
-                    "num_queries": 323,
-                    "average_relevant_docs_per_query": 38.18575851393189,
-                }
-            },
-        },
+        adapted_from=["NFCorpus"],
     )

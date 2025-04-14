@@ -4,8 +4,10 @@ import datasets
 import numpy as np
 from datasets import Dataset, DatasetDict
 
-from mteb.abstasks import AbsTaskClustering, MultilingualTask, TaskMetadata
+from mteb.abstasks.AbsTaskClustering import AbsTaskClustering
 from mteb.abstasks.AbsTaskClusteringFast import AbsTaskClusteringFast
+from mteb.abstasks.MultilingualTask import MultilingualTask
+from mteb.abstasks.TaskMetadata import TaskMetadata
 
 _LANGUAGES = {
     "de": ["deu-Latn"],
@@ -24,11 +26,10 @@ class MLSUMClusteringP2P(AbsTaskClustering, MultilingualTask):
     metadata = TaskMetadata(
         name="MLSUMClusteringP2P",
         description="Clustering of newspaper article contents and titles from MLSUM dataset. Clustering of 10 sets on the newpaper article topics.",
-        reference="https://huggingface.co/datasets/reciTAL/mlsum",
+        reference="https://huggingface.co/datasets/mteb/mlsum",
         dataset={
-            "path": "reciTAL/mlsum",
-            "revision": "b5d54f8f3b61ae17845046286940f03c6bc79bc7",
-            "trust_remote_code": True,
+            "path": "mteb/mlsum",
+            "revision": "b4efe498c4d0b9d7bdd2905f6fff4e22ae251d00",
         },
         type="Clustering",
         category="p2p",
@@ -39,7 +40,7 @@ class MLSUMClusteringP2P(AbsTaskClustering, MultilingualTask):
         date=("2010-01-01", "2018-09-30"),
         domains=["News", "Written"],
         task_subtypes=["Topic classification"],
-        license="Not specified",
+        license="not specified",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
@@ -49,10 +50,6 @@ class MLSUMClusteringP2P(AbsTaskClustering, MultilingualTask):
         journal={arXiv preprint arXiv:2004.14900},
         year={2020}
         }""",
-        descriptive_stats={
-            "n_samples": {"validation": 38561, "test": 41206},
-            "avg_character_length": {"validation": 4613, "test": 4810},
-        },
     )
 
     def load_data(self, **kwargs):
@@ -99,11 +96,10 @@ class MLSUMClusteringP2PFast(AbsTaskClusteringFast, MultilingualTask):
     metadata = TaskMetadata(
         name="MLSUMClusteringP2P.v2",
         description="Clustering of newspaper article contents and titles from MLSUM dataset. Clustering of 10 sets on the newpaper article topics.",
-        reference="https://huggingface.co/datasets/mlsum",
+        reference="https://huggingface.co/datasets/mteb/mlsum",
         dataset={
-            "path": "reciTAL/mlsum",
-            "revision": "b5d54f8f3b61ae17845046286940f03c6bc79bc7",
-            "trust_remote_code": True,
+            "path": "mteb/mlsum",
+            "revision": "b4efe498c4d0b9d7bdd2905f6fff4e22ae251d00",
         },
         type="Clustering",
         category="p2p",
@@ -114,7 +110,7 @@ class MLSUMClusteringP2PFast(AbsTaskClusteringFast, MultilingualTask):
         date=("2010-01-01", "2018-09-30"),
         domains=["News", "Written"],
         task_subtypes=["Topic classification"],
-        license="Not specified",
+        license="not specified",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
@@ -124,10 +120,7 @@ class MLSUMClusteringP2PFast(AbsTaskClusteringFast, MultilingualTask):
         journal={arXiv preprint arXiv:2004.14900},
         year={2020}
         }""",
-        descriptive_stats={
-            "n_samples": {"validation": N_SAMPLES, "test": N_SAMPLES},
-            "avg_character_length": {"validation": 4613, "test": 4810},
-        },
+        adapted_from=["MLSUMClusteringP2P"],
     )
 
     def load_data(self, **kwargs):
@@ -157,7 +150,7 @@ class MLSUMClusteringP2PFast(AbsTaskClusteringFast, MultilingualTask):
             ["summary", "url", "date", "title"]
         ).rename_columns({"topic": "labels", "text": "sentences"})
 
-        lang_dict = dict()
+        lang_dict = {}
         for split in self.metadata.eval_splits:
             labels = _dataset[split]["labels"]
             sentences = _dataset[split]["sentences"]

@@ -3,9 +3,10 @@ from __future__ import annotations
 import json
 import logging
 import os
+import warnings
 from collections import defaultdict
 from time import time
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any
 
 import tqdm
 from datasets import Dataset, Features, Value, load_dataset
@@ -18,6 +19,7 @@ from ..evaluation.evaluators.InstructionRetrievalEvaluator import (
 )
 from .AbsTask import AbsTask
 from .AbsTaskRetrieval import HFDataLoader
+from .TaskMetadata import DescriptiveStatistics
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +38,7 @@ class HFDataLoaderInstructions(HFDataLoader):
         qrels_file: str = "",
         streaming: bool = False,
         keep_in_memory: bool = False,
+        trust_remote_code: bool = False,
     ):
         self.corpus = {}
         self.queries = {}
@@ -68,14 +71,15 @@ class HFDataLoaderInstructions(HFDataLoader):
             self.qrels_file = qrels_file
         self.streaming = streaming
         self.keep_in_memory = keep_in_memory
+        self.trust_remote_code = trust_remote_code
 
     def load(
         self, split="test"
-    ) -> Tuple[
+    ) -> tuple[
         Dataset,
         Dataset,
-        Dict[str, Dict[str, int]],
-        Dict[str, Dict[str, int]],
+        dict[str, dict[str, int]],
+        dict[str, dict[str, int]],
         Dataset,
     ]:
         if not self.hf_repo:
@@ -218,21 +222,95 @@ class HFDataLoaderInstructions(HFDataLoader):
             self.og_qrels = qrels_ds
 
 
+class InstructionRetrievalDescriptiveStatistics(DescriptiveStatistics):
+    """Descriptive statistics for Instruction Retrieval tasks
+
+    Attributes:
+        num_samples: Number of samples
+        num_queries: Number of queries
+        num_docs: Number of documents
+        number_of_characters: Total number of symbols in the dataset
+
+        min_document_length: Minimum length of documents
+        average_document_length: Average length of documents
+        max_document_length: Maximum length of documents
+        unique_docs: Number of unique documents
+
+        min_query_length: Minimum length of queries
+        average_query_length: Average length of queries
+        max_query_length: Maximum length of queries
+        unique_queries: Number of unique queries
+
+        min_instruction_length: Minimum length of instructions
+        average_instruction_length: Average length of instructions
+        max_instruction_length: Maximum length of instructions
+        unique_instructions: Number of unique instructions
+
+        min_changed_instruction_length: Minimum length of changed instructions
+        average_changed_instruction_length: Average length of changed instructions
+        max_changed_instruction_length: Maximum length of changed instructions
+        unique_changed_instructions: Number of unique changed instructions
+
+        min_average_relevant_docs_per_query: Minimum number of relevant docs per query
+        average_relevant_docs_per_query: Average number of relevant docs per query
+        max_average_relevant_docs_per_query: Maximum number of relevant docs per query
+
+        min_average_top_ranked_per_query: Minimum number of top ranked docs per query
+        average_top_ranked_per_query: Average number of top ranked docs per query
+        max_average_top_ranked_per_query: Maximum number of top ranked docs per query
+    """
+
+    num_samples: int
+    num_queries: int
+    num_docs: int
+    number_of_characters: int
+
+    min_document_length: int
+    average_document_length: float
+    max_document_length: int
+    unique_docs: int
+
+    min_query_length: int
+    average_query_length: float
+    max_query_length: int
+    unique_queries: int
+
+    min_instruction_length: int
+    average_instruction_length: float
+    max_instruction_length: int
+    unique_instructions: int
+
+    min_changed_instruction_length: int
+    average_changed_instruction_length: float
+    max_changed_instruction_length: int
+    unique_changed_instructions: int
+
+    min_average_relevant_docs_per_query: float
+    average_relevant_docs_per_query: float
+    max_average_relevant_docs_per_query: float
+
+    min_average_top_ranked_per_query: float
+    average_top_ranked_per_query: float
+    max_average_top_ranked_per_query: float
+
+
 class AbsTaskInstructionRetrieval(AbsTask):
     """Abstract class for retrieval tasks that use instructions. An example from Core17 would be
         query: What is the ongoing status of The Three Gorges Project?
         instruction: A relevant document will provide the projected or actual date of completion of the project, its estimated or actual total cost, or the estimated or ongoing electrical output of the finished project. Discussions of the social, political, or ecological impact of the project are not relevant.
 
     Child-classes must implement the following properties:
-    self.corpus = Dict[corpus_id, Dict[str, str]] #id => dict with document datas like title and text
-    self.queries = Dict[query_id, str] #id => query
-    self.relevant_docs = Dict[query_id, Dict[corpus_id, int]]
-    self.og_instructions = Dict[str, str] query => original instruction
-    self.changed_instructions = Dict[str, str] query => changed instruction
-    self.top_ranked = Dict[query_id, List[corpus_id]] #id => list of top ranked document ids
+    self.corpus = dict[corpus_id, dict[str, str]] #id => dict with document datas like title and text
+    self.queries = dict[query_id, str] #id => query
+    self.relevant_docs = dict[query_id, dict[corpus_id, int]]
+    self.og_instructions = dict[str, str] query => original instruction
+    self.changed_instructions = dict[str, str] query => changed instruction
+    self.top_ranked = dict[query_id, list[corpus_id]] #id => list of top ranked document ids
 
     See https://arxiv.org/abs/2403.15246 for more details
     """
+
+    abstask_prompt = "Retrieve text based on user query."
 
     def __init__(
         self,
@@ -242,6 +320,10 @@ class AbsTaskInstructionRetrieval(AbsTask):
         self.do_length_ablation = kwargs.get("do_length_ablation", False)
         if self.do_length_ablation:
             logger.info("Running length ablation also...")
+        warnings.warn(
+            "`AbsTaskInstructionRetrieval` will be merged with Retrieval in v2.0.0.",
+            DeprecationWarning,
+        )
 
     def load_data(self, **kwargs):
         if self.data_loaded:
@@ -297,9 +379,9 @@ class AbsTaskInstructionRetrieval(AbsTask):
                 doc["id"]: {"title": doc["title"], "text": doc["text"]}
                 for doc in corpus
             }
-            assert (
-                len(top_ranked) == len(queries)
-            ), f"Top ranked not loaded properly! Expected {len(self.queries)} but got {len(self.top_ranked)}."
+            assert len(top_ranked) == len(queries), (
+                f"Top ranked not loaded properly! Expected {len(self.queries)} but got {len(self.top_ranked)}."
+            )
 
             (
                 self.corpus[split],
@@ -324,19 +406,19 @@ class AbsTaskInstructionRetrieval(AbsTask):
     def _evaluate_subset_lang(
         self,
         retriever: InstructionRetrievalEvaluator,
-        corpus: Dict,
-        queries: Dict,
-        og_relevant_docs: Dict,
-        changed_relevant_docs: Dict,
-        og_instructions: Dict,
-        changed_instructions: Dict,
-        top_ranked: Dict,
+        corpus: dict,
+        queries: dict,
+        og_relevant_docs: dict,
+        changed_relevant_docs: dict,
+        og_instructions: dict,
+        changed_instructions: dict,
+        top_ranked: dict,
         lang: str,
         split: str,
-        keywords: Union[Dict, None] = None,
-        short_instructions: Union[Dict, None] = None,
+        keywords: dict | None = None,
+        short_instructions: dict | None = None,
         **kwargs,
-    ) -> Dict[str, Union[Dict[str, float], float]]:
+    ) -> dict[str, dict[str, float] | float]:
         corpus, queries = corpus[split], queries[split]
         og_relevant_docs, changed_relevant_docs = (
             og_relevant_docs[split],
@@ -348,6 +430,7 @@ class AbsTaskInstructionRetrieval(AbsTask):
         )
 
         top_ranked = top_ranked[split]
+        kwargs["prediction_name"] = "og"  # for naming predictions, as needed
         scores_og, results_og = self._evaluate_subset(
             retriever,
             corpus,
@@ -358,6 +441,7 @@ class AbsTaskInstructionRetrieval(AbsTask):
             lang,
             **kwargs,
         )
+        kwargs["prediction_name"] = "changed"  # for naming predictions, as needed
         scores_changed, results_changed = self._evaluate_subset(
             retriever,
             corpus,
@@ -387,6 +471,7 @@ class AbsTaskInstructionRetrieval(AbsTask):
                 keywords[split],
                 short_instructions[split],
             )
+            kwargs["prediction_name"] = "base"  # for naming predictions, as needed
             scores_base, results_base = self._evaluate_subset(
                 retriever,
                 corpus,
@@ -397,6 +482,7 @@ class AbsTaskInstructionRetrieval(AbsTask):
                 lang,
                 **kwargs,
             )
+            kwargs["prediction_name"] = "keywords"  # for naming predictions, as needed
             scores_w_keywords_scores, scores_w_keywords_results = self._evaluate_subset(
                 retriever,
                 corpus,
@@ -407,17 +493,21 @@ class AbsTaskInstructionRetrieval(AbsTask):
                 lang,
                 **kwargs,
             )
-            scores_w_short_instr_scores, scores_w_short_instr_result = (
-                self._evaluate_subset(
-                    retriever,
-                    corpus,
-                    queries,
-                    og_relevant_docs,
-                    short_instructions,
-                    top_ranked,
-                    lang,
-                    **kwargs,
-                )
+            kwargs["prediction_name"] = (
+                "short_instr"  # for naming predictions, as needed
+            )
+            (
+                scores_w_short_instr_scores,
+                scores_w_short_instr_result,
+            ) = self._evaluate_subset(
+                retriever,
+                corpus,
+                queries,
+                og_relevant_docs,
+                short_instructions,
+                top_ranked,
+                lang,
+                **kwargs,
             )
             overall_changed_scores["length_ablation"] = {
                 "keywords": scores_w_keywords_scores,
@@ -431,10 +521,11 @@ class AbsTaskInstructionRetrieval(AbsTask):
         self,
         model: Encoder,
         split: str = "test",
+        subsets_to_run: list[str] | None = None,
         *,
-        encode_kwargs: Dict[str, Any] = {},
+        encode_kwargs: dict[str, Any] = {},
         **kwargs,
-    ) -> Dict[str, Dict[str, Any]]:
+    ) -> dict[str, dict[str, Any]]:
         retriever = InstructionRetrievalEvaluator(
             retriever=model,
             task_name=self.metadata.name,
@@ -443,7 +534,11 @@ class AbsTaskInstructionRetrieval(AbsTask):
         )
         scores = {}
         if self.is_multilingual:
-            for lang in self.hf_subsets:
+            hf_subsets = self.hf_subsets
+            if subsets_to_run is not None:
+                hf_subsets = [s for s in hf_subsets if s in subsets_to_run]
+
+            for lang in hf_subsets:
                 logger.info(f"Language: {lang}")
                 scores[lang] = self._evaluate_subset_lang(
                     retriever,
@@ -492,14 +587,14 @@ class AbsTaskInstructionRetrieval(AbsTask):
     def _evaluate_subset(
         self,
         retriever: InstructionRetrievalEvaluator,
-        corpus: Dict[str, Dict[str, str]],
-        queries: Dict[str, str],
-        relevant_docs: Dict[str, Dict[str, int]],
-        instructions: Dict[str, str],
-        top_ranked: Dict[str, List[str]],
+        corpus: dict[str, dict[str, str]],
+        queries: dict[str, str],
+        relevant_docs: dict[str, dict[str, int]],
+        instructions: dict[str, str],
+        top_ranked: dict[str, list[str]],
         lang=None,
         **kwargs,
-    ) -> Tuple[Dict[str, float], Dict[str, Dict[str, float]]]:
+    ) -> tuple[dict[str, float], dict[str, dict[str, float]]]:
         start_time = time()
 
         # do the results by query and relevant docs only
@@ -523,9 +618,7 @@ class AbsTaskInstructionRetrieval(AbsTask):
         results = {k: v for d in all_results for k, v in d.items()}
 
         end_time = time()
-        logger.info(
-            "Time taken to retrieve: {:.2f} seconds".format(end_time - start_time)
-        )
+        logger.info(f"Time taken to retrieve: {end_time - start_time:.2f} seconds")
 
         if kwargs.get("save_predictions", False):
             output_folder = kwargs.get("output_folder", "results")
@@ -548,6 +641,11 @@ class AbsTaskInstructionRetrieval(AbsTask):
                 )
             else:
                 qrels_save_path = f"{output_folder}/{self.metadata_dict['name']}_{lang}_predictions.json"
+
+            if kwargs.get("prediction_name", None):
+                qrels_save_path = qrels_save_path.replace(
+                    ".json", f"_{kwargs['prediction_name']}.json"
+                )
 
             with open(qrels_save_path, "w") as f:
                 json.dump(results, f)
@@ -581,56 +679,144 @@ class AbsTaskInstructionRetrieval(AbsTask):
 
         return newly_irrelevant_qrels
 
-    def calculate_metadata_metrics(self) -> None:
-        self.load_data()
-
-        for split in self.metadata_dict["eval_splits"]:
-            if self.is_multilingual:
-                for lang in self.og_relevant_docs.keys():
-                    process_language(
-                        self.og_relevant_docs[lang][split],
-                        self.queries[lang][split],
-                        self.corpus[lang][split],
-                        self.changed_instructions[lang][split],
-                        lang,
-                    )
-            else:
-                process_language(
-                    self.og_relevant_docs[split],
-                    self.queries[split],
-                    self.corpus[split],
-                    self.changed_instructions[split],
+    def _calculate_metrics_from_split(
+        self, split: str, hf_subset: str | None = None, compute_overall: bool = False
+    ) -> InstructionRetrievalDescriptiveStatistics:
+        if hf_subset:
+            corpus = self.corpus[hf_subset][split]
+            queries = self.queries[hf_subset][split]
+            relevant_docs = self.og_relevant_docs[hf_subset][split]
+            og_instructions = self.og_instructions[hf_subset][split]
+            changed_instructions = self.changed_instructions[hf_subset][split]
+            top_ranked = self.top_ranked[hf_subset][split]
+        elif compute_overall:
+            corpus = {}
+            queries = {}
+            relevant_docs = {}
+            og_instructions = {}
+            changed_instructions = {}
+            top_ranked = {}
+            for hf_subset in self.metadata.eval_langs:
+                corpus.update(process_docs(self.corpus, hf_subset, split))
+                queries.update(process_docs(self.queries, hf_subset, split))
+                relevant_docs.update(
+                    process_relevant_docs(self.og_relevant_docs, hf_subset, split)
                 )
+                og_instructions.update(
+                    process_docs(
+                        self.og_instructions,
+                        hf_subset,
+                        split,
+                    )
+                )
+                changed_instructions.update(
+                    process_docs(self.changed_instructions, hf_subset, split)
+                )
+                top_ranked.update(process_top_ranked(self.top_ranked, hf_subset, split))
+        else:
+            corpus = self.corpus[split]
+            queries = self.queries[split]
+            relevant_docs = self.og_relevant_docs[split]
+            og_instructions = self.og_instructions[split]
+            changed_instructions = self.changed_instructions[split]
+            top_ranked = self.top_ranked[split]
+
+        corpus_combined = [
+            doc.get("title", "") + doc["text"] for doc in corpus.values()
+        ]
+        corpus_len = [len(doc) for doc in corpus_combined]
+        total_corpus_len = sum(corpus_len)
+
+        queries_len = [len(query) for query in queries.values()]
+        total_queries_len = sum(queries_len)
+        instructions_len = [
+            len(instruction) for instruction in og_instructions.values()
+        ]
+        total_instructions_len = sum(instructions_len)
+        changed_instructions_len = [
+            len(instruction) for instruction in changed_instructions.values()
+        ]
+        total_changed_instructions_len = sum(changed_instructions_len)
+        qrels_non_zero = [
+            sum(1 for doc_id in docs if docs[doc_id] != 0)
+            for docs in relevant_docs.values()
+        ]
+        num_qrels_non_zero = sum(qrels_non_zero)
+        qrels_per_doc = num_qrels_non_zero / len(relevant_docs) if len(queries) else 0
+        ranked_per_query = [len(docs) for docs in top_ranked.values()]
+        top_ranked_per_query = (
+            sum(ranked_per_query) / len(queries) if len(queries) else 0
+        )
+        return InstructionRetrievalDescriptiveStatistics(
+            num_samples=len(queries) + len(corpus),
+            num_docs=len(corpus),
+            num_queries=len(queries),
+            number_of_characters=total_corpus_len
+            + total_queries_len
+            + total_instructions_len
+            + total_changed_instructions_len,
+            min_document_length=min(corpus_len),
+            average_document_length=(
+                total_corpus_len / len(corpus) if len(corpus) else 0
+            ),
+            max_document_length=max(corpus_len),
+            unique_docs=len(set(corpus_combined)),
+            min_query_length=min(queries_len),
+            average_query_length=(
+                total_queries_len / len(queries) if len(queries) else 0
+            ),
+            max_query_length=max(queries_len),
+            unique_queries=len(set(queries.values())),
+            min_instruction_length=min(instructions_len),
+            average_instruction_length=(
+                total_instructions_len / len(queries) if len(queries) else 0
+            ),
+            max_instruction_length=max(instructions_len),
+            unique_instructions=len(set(og_instructions.values())),
+            min_changed_instruction_length=min(changed_instructions_len),
+            average_changed_instruction_length=(
+                total_changed_instructions_len / len(queries) if len(queries) else 0
+            ),
+            max_changed_instruction_length=max(changed_instructions_len),
+            unique_changed_instructions=len(set(changed_instructions.values())),
+            min_average_relevant_docs_per_query=min(qrels_non_zero),
+            average_relevant_docs_per_query=qrels_per_doc,
+            max_average_relevant_docs_per_query=max(qrels_non_zero),
+            min_average_top_ranked_per_query=min(ranked_per_query),
+            average_top_ranked_per_query=top_ranked_per_query,
+            max_average_top_ranked_per_query=max(ranked_per_query),
+        )
 
 
-def process_language(relevant_docs, queries, corpus, instructions, lang=None):
-    total_length, num_pairs = calculate_length_and_count(
-        relevant_docs, queries, corpus, instructions
-    )
-    average_length = total_length / num_pairs if num_pairs else 0
-    num_documents = len(queries) + len(corpus)
-
-    language_description = f" for language {lang}" if lang else ""
-    print(
-        f"Average character length for changed{language_description} is {average_length}"
-    )
-    print(
-        f"Number of queries and documents{language_description} is {num_documents} (repeated 2x)"
-    )
+def process_docs(
+    collection: dict[str, dict[str, dict[str, str]]], hf_subset: str, split: str
+) -> dict[str, str]:
+    """Collections can contain overlapping ids in different splits. Prepend split to avoid this"""
+    return {
+        f"{split}_{hf_subset}_{k}": v for k, v in collection[hf_subset][split].items()
+    }
 
 
-def calculate_length_and_count(relevant_docs, queries, corpus, instructions):
-    total_length = 0
-    num_pairs = 0
-    for query_id, docs in relevant_docs.items():
-        query = queries[query_id]
-        query += " " + instructions[query]
-        for doc_id in docs:
-            # not relevant
-            if docs[doc_id] == 0:
-                continue
-            doc = corpus[doc_id]
-            doc_text = doc["title"] + doc["text"]
-            total_length += len(query) + len(doc_text)
-            num_pairs += 1
-    return total_length, num_pairs
+def process_relevant_docs(
+    collection: dict[str, dict[str, dict[str, dict[str, int]]]],
+    hf_subset: str,
+    split: str,
+) -> dict[str, dict[str, int]]:
+    """Collections can contain overlapping ids in different splits. Prepend split to avoid this"""
+    return_collection = {}
+    for query_id, relevant in collection[hf_subset][split].items():
+        return_collection[f"{split}_{hf_subset}_{query_id}"] = {
+            f"{split}_{hf_subset}_{doc_id}": value for doc_id, value in relevant.items()
+        }
+    return return_collection
+
+
+def process_top_ranked(
+    collection: dict[str, dict[str, dict[str, list[str]]]], hf_subset: str, split: str
+) -> dict[str, list[str]]:
+    return_collection = {}
+    for query_id, docs_id in collection[hf_subset][split].items():
+        return_collection[f"{split}_{hf_subset}_{query_id}"] = [
+            f"{split}_{hf_subset}_{doc_id}" for doc_id in docs_id
+        ]
+    return return_collection

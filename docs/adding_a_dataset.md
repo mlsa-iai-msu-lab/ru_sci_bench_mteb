@@ -4,7 +4,7 @@
 To add a new dataset to MTEB, you need to do three things:
 
 1) Implement a task with the desired dataset, by subclassing an abstract task
-2) Add metadata to the task
+2) Add metadata to the task (run `task.calculate_metadata_metrics()`)
 3) Submit the edits to the [MTEB](https://github.com/embeddings-benchmark/mteb) repository
 
 If you have any questions regarding this process feel free to open a discussion [thread](https://github.com/embeddings-benchmark/mteb/discussions).
@@ -37,7 +37,7 @@ class SciDocsReranking(AbsTaskReranking):
         dataset={
             "path": "mteb/scidocs-reranking",
             "revision": "d3c5e1fc0b855ab6097bf1cda04dd73947d7caab",
-        }
+        },
         date=("2000-01-01", "2020-12-31"), # best guess
         domains=["Academic", "Non-fiction", "Domains"],
         task_subtypes=["Scientific Reranking"],
@@ -45,7 +45,6 @@ class SciDocsReranking(AbsTaskReranking):
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
-        descriptive_stats={"n_samples": {"test": 19599}, "avg_character_length": {"test": 69.0}},
         bibtex_citation="""
 @inproceedings{cohan-etal-2020-specter,
     title = "{SPECTER}: Document-level Representation Learning using Citation-informed Transformers",
@@ -73,11 +72,11 @@ class SciDocsReranking(AbsTaskReranking):
 
 # testing the task with a model:
 model = SentenceTransformer("average_word_embeddings_komninos")
-evaluation = MTEB(tasks=[MindSmallReranking()])
+evaluation = MTEB(tasks=[SciDocsReranking()])
 evaluation.run(model)
 ```
 
-> **Note:** for multilingual / crosslingual tasks, make sure your class also inherits from the `MultilingualTask` class like in [this](https://github.com/embeddings-benchmark/mteb-draft/blob/main/mteb/tasks/Classification/MTOPIntentClassification.py) example.
+> **Note:** for multilingual / crosslingual tasks, make sure your class also inherits from the `MultilingualTask` class like in [this](https://github.com/embeddings-benchmark/mteb/blob/main/mteb/tasks/Classification/multilingual/MTOPIntentClassification.py) example.
 
 
 
@@ -104,12 +103,12 @@ class VGClustering(AbsTaskClustering):
         form="Written",
         domains=["Academic", "Non-fiction"],
         task_subtypes=["Scientific Reranking"],
-        license="cc-by-nc",
+        license="cc-by-nc-4.0",
         annotations_creators="derived",
         dialect=[],
         text_creation="found",
         bibtex_citation= ... # removed for brevity
-)
+    )
 
     def dataset_transform(self):
         splits = self.description["eval_splits"]
@@ -159,7 +158,6 @@ class VGClustering(AbsTaskClustering):
         self.dataset = datasets.DatasetDict(ds)
 ```
 
-</details>
 
 
 ## 2) Creating the metadata object
@@ -170,14 +168,14 @@ To get an overview of the fields in the metadata object, you can look at the [Ta
 
 Note that these fields can be left blank if the information is not available and can be extended if necessary. We do not include any machine-translated (without verification) datasets in the benchmark.
 
-<details closed>
+<details>
 <summary>Domains</summary>
 <br>
 
 The domains follow the categories used in the [Universal Dependencies project](https://universaldependencies.org), though we updated them where deemed appropriate. These do not have to be mutually exclusive.
 
 | **Domain**    | **Description**                                                  |
-| ------------- | ---------------------------------------------------------------- |
+|---------------|------------------------------------------------------------------|
 | Academic      | Academic writing                                                 |
 | Religious     | Religious text e.g. bibles                                       |
 | Blog          | [Blogpost, weblog etc.](https://en.wikipedia.org/wiki/Blog)      |
@@ -199,7 +197,7 @@ The domains follow the categories used in the [Universal Dependencies project](h
 
 
 <br>
-<details closed>
+<details>
 <summary>Task Subtypes</summary>
 <br>
 
@@ -208,7 +206,7 @@ These domains subtypes were introduced in the [Scandinavian Embedding Benchmark]
 
 
 | Formalization           | Task                     | Description                                                                                                     |
-| ----------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------- |
+|-------------------------|--------------------------|-----------------------------------------------------------------------------------------------------------------|
 | **Retrieval**           |                          | Retrieval focuses on locating and providing relevant information or documents based on a query.                 |
 |                         | Question answering       | Finding answers to queries in a dataset, focusing on exact answers or relevant passages.                        |
 |                         | Article retrieval        | Identifying and retrieving full articles that are relevant to a given query.                                    |
@@ -254,7 +252,7 @@ model = SentenceTransformer(model_name)
 evaluation = MTEB(tasks=[YourNewTask()])
 ```
 
-- [ ] I have run the following models on the task (adding the results to the pr). These can be run using the `mteb -m {model_name} -t {task_name}` command.
+- [ ] I have run the following models on the task (adding the results to the pr). These can be run using the `mteb run -m {model_name} -t {task_name}` command.
   - [ ] `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
   - [ ] `intfloat/multilingual-e5-small`
 - [ ] I have checked that the performance is neither trivial (both models gain close to perfect scores) nor random (both models gain close to random scores).

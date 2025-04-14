@@ -25,7 +25,7 @@ class SickBrSTS(AbsTaskSTS):
         date=("2018-01-01", "2018-09-01"),  # rough estimate
         domains=["Web", "Written"],
         task_subtypes=["Textual Entailment"],
-        license="unknown",
+        license="not specified",
         annotations_creators="human-annotated",
         dialect=[],
         sample_creation="human-translated and localized",
@@ -50,10 +50,6 @@ class SickBrSTS(AbsTaskSTS):
   isbn="978-3-319-99722-3"
 }
         """,
-        descriptive_stats={
-            "n_samples": {"test": N_SAMPLES},
-            "avg_character_length": {"test": 54.89},
-        },
     )
 
     @property
@@ -64,14 +60,12 @@ class SickBrSTS(AbsTaskSTS):
         return metadata_dict
 
     def dataset_transform(self):
-        for split in self.dataset:
-            self.dataset.update(
-                {
-                    split: self.dataset[split].train_test_split(
-                        test_size=N_SAMPLES, seed=self.seed, label="entailment_label"
-                    )["test"]
-                }
-            )
+        self.dataset = self.stratified_subsampling(
+            self.dataset,
+            seed=42,
+            splits=self.metadata.eval_splits,
+            label="entailment_label",
+        )
 
         self.dataset = self.dataset.rename_columns(
             {

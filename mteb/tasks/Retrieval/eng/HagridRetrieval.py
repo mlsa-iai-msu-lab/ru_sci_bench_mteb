@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import uuid
-from typing import Dict, List
 
 import datasets
 
@@ -21,8 +20,8 @@ class HagridRetrieval(AbsTaskRetrieval):
         reference="https://github.com/project-miracl/hagrid",
         description=(
             "HAGRID (Human-in-the-loop Attributable Generative Retrieval for Information-seeking Dataset)"
-            "is a dataset for generative information-seeking scenarios. It consists of queries"
-            "along with a set of manually labelled relevant passages"
+            + "is a dataset for generative information-seeking scenarios. It consists of queries"
+            + "along with a set of manually labelled relevant passages"
         ),
         type="Retrieval",
         category="s2p",
@@ -38,23 +37,11 @@ class HagridRetrieval(AbsTaskRetrieval):
         dialect=[],
         sample_creation="found",
         bibtex_citation="""@article{hagrid,
-      title={{HAGRID}: A Human-LLM Collaborative Dataset for Generative Information-Seeking with Attribution}, 
+      title={{HAGRID}: A Human-LLM Collaborative Dataset for Generative Information-Seeking with Attribution},
       author={Ehsan Kamalloo and Aref Jafari and Xinyu Zhang and Nandan Thakur and Jimmy Lin},
       year={2023},
       journal={arXiv:2307.16883},
 }""",
-        descriptive_stats={
-            "n_samples": {"train": 1922},
-            "avg_character_length": {
-                "dev": {
-                    "average_document_length": 228.36693548387098,
-                    "average_query_length": 40.064516129032256,
-                    "num_documents": 496,
-                    "num_queries": 496,
-                    "average_relevant_docs_per_query": 1.0,
-                }
-            },
-        },
     )
 
     def load_data(self, **kwargs):
@@ -66,6 +53,9 @@ class HagridRetrieval(AbsTaskRetrieval):
             "miracl/hagrid",
             split=self.metadata.eval_splits[0],
             revision=self.metadata_dict["dataset"].get("revision", None),
+            trust_remote_code=self.metadata_dict["dataset"].get(
+                "trust_remote_code", False
+            ),
         )
         proc_data = self.preprocess_data(data)
 
@@ -87,7 +77,7 @@ class HagridRetrieval(AbsTaskRetrieval):
 
         self.data_loaded = True
 
-    def preprocess_data(self, dataset: Dict) -> List[Dict]:
+    def preprocess_data(self, dataset: dict) -> list[dict]:
         """Preprocessed the data in a format easirer
         to handle for the loading of queries and corpus
         ------
@@ -111,7 +101,7 @@ class HagridRetrieval(AbsTaskRetrieval):
 
         return preprocessed_data
 
-    def get_best_answer(self, data: Dict) -> str:
+    def get_best_answer(self, data: dict) -> str:
         """Get the best answer among available answers
         of a query.
         WARNING : May return None if no good answer available

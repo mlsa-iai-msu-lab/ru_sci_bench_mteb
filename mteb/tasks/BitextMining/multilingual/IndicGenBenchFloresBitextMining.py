@@ -4,9 +4,9 @@ from typing import Any
 
 import datasets
 
+from mteb.abstasks.AbsTaskBitextMining import AbsTaskBitextMining
+from mteb.abstasks.MultilingualTask import MultilingualTask
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskBitextMining, MultilingualTask
 
 _LANGUAGES = [
     "ben-Beng",
@@ -116,22 +116,18 @@ class IndicGenBenchFloresBitextMining(AbsTaskBitextMining, MultilingualTask):
         date=("2023-10-01", "2024-05-01"),
         domains=["Web", "News", "Written"],
         task_subtypes=[],
-        license="CC-BY-SA-4.0",
+        license="cc-by-sa-4.0",
         annotations_creators="expert-annotated",
         dialect=[],
         sample_creation="human-translated and localized",
         bibtex_citation="""@misc{singh2024indicgenbench,
-      title={IndicGenBench: A Multilingual Benchmark to Evaluate Generation Capabilities of LLMs on Indic Languages}, 
+      title={IndicGenBench: A Multilingual Benchmark to Evaluate Generation Capabilities of LLMs on Indic Languages},
       author={Harman Singh and Nitish Gupta and Shikhar Bharadwaj and Dinesh Tewari and Partha Talukdar},
       year={2024},
       eprint={2404.16816},
       archivePrefix={arXiv},
       primaryClass={cs.CL}
 }""",
-        descriptive_stats={
-            "n_samples": {"validation": 997, "test": 1012},
-            "avg_character_length": {"validation": 126.25, "test": 130.84},
-        },
     )
 
     def load_data(self, **kwargs: Any) -> None:

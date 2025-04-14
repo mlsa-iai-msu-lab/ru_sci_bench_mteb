@@ -1,22 +1,21 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
-from ....abstasks import AbsTaskClassification
-
-_LANGUAGES = {
-    "afr": ["afr-Latn"],
-    "eng": ["eng-Latn"],
-    "nbl": ["nbl-Latn"],
-    "nso": ["nso-Latn"],
-    "sot": ["sot-Latn"],
-    "ssw": ["ssw-Latn"],
-    "tsn": ["tsn-Latn"],
-    "tso": ["tso-Latn"],
-    "ven": ["ven-Latn"],
-    "xho": ["xho-Latn"],
-    "zul": ["zul-Latn"],
-}
+_LANGUAGES = [
+    "afr-Latn",
+    "eng-Latn",
+    "nbl-Latn",
+    "nso-Latn",
+    "sot-Latn",
+    "ssw-Latn",
+    "tsn-Latn",
+    "tso-Latn",
+    "ven-Latn",
+    "xho-Latn",
+    "zul-Latn",
+]
 
 
 class SouthAfricanLangClassification(AbsTaskClassification):
@@ -37,7 +36,7 @@ class SouthAfricanLangClassification(AbsTaskClassification):
         date=("2010-01-01", "2023-01-01"),
         domains=["Web", "Non-fiction", "Written"],
         task_subtypes=["Language identification"],
-        license="MIT",
+        license="mit",
         annotations_creators="expert-annotated",
         dialect=[],
         sample_creation="found",
@@ -48,10 +47,6 @@ class SouthAfricanLangClassification(AbsTaskClassification):
     year = {2022},
     url = {https://kaggle.com/competitions/south-african-language-identification}
 }""",
-        descriptive_stats={
-            "n_samples": {"test": 2048},
-            "avg_character_length": {"test": 247.49},
-        },
     )
 
     def dataset_transform(self) -> None:

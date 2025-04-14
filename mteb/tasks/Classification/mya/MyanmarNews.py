@@ -1,4 +1,6 @@
-from mteb.abstasks import AbsTaskClassification
+from __future__ import annotations
+
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
 
@@ -21,7 +23,7 @@ class MyanmarNews(AbsTaskClassification):
         date=("2017-10-01", "2017-10-31"),
         domains=["News", "Written"],
         task_subtypes=["Topic classification"],
-        license="GPL 3.0",
+        license="gpl-3.0",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
@@ -34,10 +36,6 @@ class MyanmarNews(AbsTaskClassification):
         month     = {February},
         pages     = {401--408}
         }""",
-        descriptive_stats={
-            "n_samples": {"train": 2048},
-            "avg_character_length": {"train": 174.2},
-        },
     )
 
     def dataset_transform(self):

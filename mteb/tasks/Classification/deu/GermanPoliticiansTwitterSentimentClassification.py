@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskClassification
 
 
 class GermanPoliticiansTwitterSentimentClassification(AbsTaskClassification):
@@ -23,7 +22,7 @@ class GermanPoliticiansTwitterSentimentClassification(AbsTaskClassification):
         date=("2021-01-01", "2021-12-31"),
         domains=["Social", "Government", "Written"],
         task_subtypes=["Sentiment/Hate speech"],
-        license="Not specified",
+        license="not specified",
         annotations_creators="human-annotated",
         dialect=[],
         sample_creation="found",
@@ -49,10 +48,6 @@ class GermanPoliticiansTwitterSentimentClassification(AbsTaskClassification):
                 pages = "74--87",
             }
         """,
-        descriptive_stats={
-            "n_samples": {"test": 357},
-            "avg_character_length": {"test": 302.48},
-        },
     )
 
     def dataset_transform(self):

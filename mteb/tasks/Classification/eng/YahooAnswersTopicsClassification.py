@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskClassification
 
 
 class YahooAnswersTopicsClassification(AbsTaskClassification):
@@ -24,7 +23,7 @@ class YahooAnswersTopicsClassification(AbsTaskClassification):
         date=("2022-01-25", "2022-01-25"),
         domains=["Web", "Written"],
         task_subtypes=["Topic classification"],
-        license="Not specified",
+        license="not specified",
         annotations_creators="human-annotated",
         dialect=[],
         sample_creation="found",
@@ -40,18 +39,9 @@ class YahooAnswersTopicsClassification(AbsTaskClassification):
         volume = {28},
         year = {2015}
         }""",
-        descriptive_stats={
-            "n_samples": {"test": 60000},
-            "avg_character_length": {"test": 346.35},
-        },
     )
 
-    @property
-    def metadata_dict(self) -> dict[str, str]:
-        metadata_dict = dict(self.metadata)
-        metadata_dict["n_experiments"] = 10
-        metadata_dict["samples_per_label"] = 32
-        return metadata_dict
+    samples_per_label = 32
 
     def dataset_transform(self):
         self.dataset = self.dataset.remove_columns(

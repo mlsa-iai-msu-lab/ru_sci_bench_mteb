@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import datasets
 
-from mteb.abstasks import MultilingualTask
 from mteb.abstasks.AbsTaskPairClassification import AbsTaskPairClassification
+from mteb.abstasks.MultilingualTask import MultilingualTask
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
 _LANGS = {
@@ -52,10 +52,6 @@ class RTE3(MultilingualTask, AbsTaskPairClassification):
         }
         """,
         # sum of 4 languages after neutral filtering
-        descriptive_stats={
-            "n_samples": {"test": 1923},
-            "avg_character_length": {"test": 124.79},
-        },
     )
 
     def load_data(self, **kwargs):

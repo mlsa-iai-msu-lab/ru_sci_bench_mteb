@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import logging
-from functools import partial
-from typing import Any, Callable, Dict, List
+from typing import Any
 
 import numpy as np
 import torch
@@ -11,9 +10,8 @@ from sklearn.metrics import average_precision_score
 
 from mteb.evaluation.evaluators.RetrievalEvaluator import RetrievalEvaluator
 
-from ...encoder_interface import Encoder, EncoderWithQueryCorpusEncode
+from ...encoder_interface import Encoder, PromptType
 from .Evaluator import Evaluator
-from .model_encode import model_encode
 from .utils import confidence_scores, cos_sim, nAUC
 
 logger = logging.getLogger(__name__)
@@ -36,7 +34,6 @@ class RerankingEvaluator(Evaluator):
         task_name: str | None = None,
         mrr_at_k: int = 10,
         name: str = "",
-        similarity_fct=cos_sim,
         encode_kwargs: dict[str, Any] = {},
         use_batched_encoding: bool = True,
         limit: int | None = None,
@@ -50,7 +47,6 @@ class RerankingEvaluator(Evaluator):
         self.samples = samples
         self.name = name
         self.mrr_at_k = mrr_at_k
-        self.similarity_fct = similarity_fct
         self.use_batched_encoding = use_batched_encoding
         self.task_name = task_name
         self.k_values = k_values
@@ -70,40 +66,28 @@ class RerankingEvaluator(Evaluator):
             if len(sample["positive"]) > 0 and len(sample["negative"]) > 0
         ]
 
-    def __call__(self, model):
+    def __call__(self, model: Encoder):
         scores = self.compute_metrics(model)
         return scores
 
-    def compute_metrics(self, model):
+    def compute_metrics(self, model: Encoder):
         return (
             self.compute_metrics_batched(model)
             if self.use_batched_encoding
             else self.compute_metrics_individual(model)
         )
 
-    def compute_metrics_batched(self, model: Encoder | EncoderWithQueryCorpusEncode):
+    def compute_metrics_batched(self, model: Encoder):
         """Computes the metrices in a batched way, by batching all queries and
         all documents together
         """
-        # using encode_queries and encode_corpus functions if they exists,
-        # which can be defined by users to add different instructions for query and passage conveniently
-        encode_queries_func = (
-            model.encode_queries
-            if isinstance(model, EncoderWithQueryCorpusEncode)
-            else partial(model_encode, model=model)
-        )
-        encode_corpus_func = (
-            model.encode_corpus
-            if isinstance(model, EncoderWithQueryCorpusEncode)
-            else partial(model_encode, model=model)
-        )
-
         logger.info("Encoding queries...")
         if isinstance(self.samples[0]["query"], str):
             all_query_embs = np.asarray(
-                encode_queries_func(
+                model.encode(
                     [sample["query"] for sample in self.samples],
-                    prompt_name=self.task_name,
+                    task_name=self.task_name,
+                    prompt_type=PromptType.query,
                     **self.encode_kwargs,
                 )
             )
@@ -114,8 +98,9 @@ class RerankingEvaluator(Evaluator):
             ]
             all_query_embs = self._encode_unique_texts(
                 all_query_flattened,
-                encode_queries_func,
-                prompt_name=self.task_name,
+                model,
+                task_name=self.task_name,
+                prompt_type=PromptType.query,
                 **self.encode_kwargs,
             )
         else:
@@ -125,58 +110,44 @@ class RerankingEvaluator(Evaluator):
 
         if self.evaluator_type == "standard":
             results = self._encode_candidates(
-                encode_queries_func=encode_queries_func,
-                encode_corpus_func=encode_corpus_func,
+                model=model,
                 batched=True,
                 all_query_embs=all_query_embs,
             )
         elif self.evaluator_type == "miracl":
             results = self._encode_candidates_miracl(
-                encode_queries_func=encode_queries_func,
-                encode_corpus_func=encode_corpus_func,
+                model=model,
                 batched=True,
                 all_query_embs=all_query_embs,
             )
         return results
 
-    def compute_metrics_individual(self, model):
+    def compute_metrics_individual(self, model: Encoder):
         """Embeds every (query, positive, negative) tuple individually.
         Is slower than the batched version, but saves memory as only the
         embeddings for one tuple are needed. Useful when you have
         a really large test set
         """
-        # using encode_queries and encode_corpus functions if they exists,
-        # which can be defined by users to add different instructions for query and passage conveniently
-        encode_queries_func = (
-            model.encode_queries if hasattr(model, "encode_queries") else model.encode
-        )
-        encode_corpus_func = (
-            model.encode_corpus if hasattr(model, "encode_corpus") else model.encode
-        )
         if self.evaluator_type == "standard":
             results = self._encode_candidates(
-                encode_queries_func=encode_queries_func,
-                encode_corpus_func=encode_corpus_func,
+                model=model,
                 batched=False,
             )
         elif self.evaluator_type == "miracl":
             results = self._encode_candidates_miracl(
-                encode_queries_func=encode_queries_func,
-                encode_corpus_func=encode_corpus_func,
+                model=model,
                 batched=False,
             )
         return results
 
-    def _encode_candidates(
-        self, encode_corpus_func, batched, all_query_embs=None, encode_queries_func=None
-    ):
+    def _encode_candidates(self, model: Encoder, batched: bool, all_query_embs=None):
         all_mrr_scores = []
         all_ap_scores = []
         all_conf_scores = []
         logger.info("Encoding candidates...")
         if batched:
             self._encode_candidates_batched(
-                encode_corpus_func=encode_corpus_func,
+                model=model,
                 all_query_embs=all_query_embs,
                 all_mrr_scores=all_mrr_scores,
                 all_ap_scores=all_ap_scores,
@@ -184,8 +155,7 @@ class RerankingEvaluator(Evaluator):
             )
         else:
             self._encode_candidates_individual(
-                encode_queries_func=encode_queries_func,
-                encode_corpus_func=encode_corpus_func,
+                model=model,
                 all_mrr_scores=all_mrr_scores,
                 all_ap_scores=all_ap_scores,
                 all_conf_scores=all_conf_scores,
@@ -196,7 +166,7 @@ class RerankingEvaluator(Evaluator):
     def _encode_candidates_batched(
         self,
         all_query_embs,
-        encode_corpus_func,
+        model: Encoder,
         all_mrr_scores,
         all_ap_scores,
         all_conf_scores,
@@ -208,8 +178,9 @@ class RerankingEvaluator(Evaluator):
 
         all_docs_embs = self._encode_unique_texts(
             all_docs,
-            encode_corpus_func,
-            prompt_name=self.task_name,
+            model,
+            task_name=self.task_name,
+            prompt_type=PromptType.passage,
             **self.encode_kwargs,
         )
 
@@ -238,12 +209,12 @@ class RerankingEvaluator(Evaluator):
                 all_mrr_scores,
                 all_ap_scores,
                 all_conf_scores,
+                model,
             )
 
     def _encode_candidates_individual(
         self,
-        encode_queries_func,
-        encode_corpus_func,
+        model: Encoder,
         all_mrr_scores,
         all_ap_scores,
         all_conf_scores,
@@ -260,10 +231,24 @@ class RerankingEvaluator(Evaluator):
             is_relevant = [True] * len(positive) + [False] * len(negative)
 
             if isinstance(query, str):
-                # .encoding interface requires List[str] as input
+                # .encoding interface requires list[str] as input
                 query = [query]
-            query_emb = np.asarray(encode_queries_func(query, **self.encode_kwargs))
-            docs_emb = np.asarray(encode_corpus_func(docs, **self.encode_kwargs))
+            query_emb = np.asarray(
+                model.encode(
+                    query,
+                    task_name=self.task_name,
+                    prompt_type=PromptType.query,
+                    **self.encode_kwargs,
+                )
+            )
+            docs_emb = np.asarray(
+                model.encode(
+                    docs,
+                    task_name=self.task_name,
+                    prompt_type=PromptType.passage,
+                    **self.encode_kwargs,
+                )
+            )
             self._apply_sim_scores(
                 query_emb,
                 docs_emb,
@@ -271,6 +256,7 @@ class RerankingEvaluator(Evaluator):
                 all_mrr_scores,
                 all_ap_scores,
                 all_conf_scores,
+                model,
             )
 
     def _collect_results(self, all_mrr_scores, all_ap_scores, all_conf_scores):
@@ -285,29 +271,30 @@ class RerankingEvaluator(Evaluator):
 
     def _encode_candidates_miracl(
         self,
-        encode_corpus_func,
-        encode_queries_func,
+        model: Encoder,
         batched,
         all_query_embs=None,
     ):
         if batched:
             return self._encode_candidates_miracl_batched(
-                all_query_embs=all_query_embs, encode_corpus_func=encode_corpus_func
+                model=model, all_query_embs=all_query_embs
             )
         else:
             return self._encode_candidates_miracl_individual(
-                encode_queries_func=encode_queries_func,
-                encode_corpus_func=encode_corpus_func,
+                model=model,
             )
 
-    def _encode_candidates_miracl_batched(self, all_query_embs, encode_corpus_func):
+    def _encode_candidates_miracl_batched(self, all_query_embs, model: Encoder):
         all_docs = []
         for sample in self.samples:
             all_docs.extend(sample["candidates"])
 
         all_docs_embs = np.asarray(
-            encode_corpus_func(
-                all_docs, prompt_name=self.task_name, **self.encode_kwargs
+            model.encode(
+                all_docs,
+                task_name=self.task_name,
+                prompt_type=PromptType.passage,
+                **self.encode_kwargs,
             )
         )
 
@@ -329,7 +316,7 @@ class RerankingEvaluator(Evaluator):
             docs_idx += num_doc
 
             fake_qid = str(query_idx)
-            results[fake_qid] = self.rerank(query_emb, docs_emb)
+            results[fake_qid] = self.rerank(query_emb, docs_emb, model)
             qrels[fake_qid] = {
                 str(i): 1 if doc in positive else 0 for i, doc in enumerate(docs)
             }
@@ -337,9 +324,7 @@ class RerankingEvaluator(Evaluator):
         scores_miracl = self._collect_miracl_results(results, qrels)
         return scores_miracl
 
-    def _encode_candidates_miracl_individual(
-        self, encode_queries_func, encode_corpus_func
-    ):
+    def _encode_candidates_miracl_individual(self, model: Encoder):
         results, qrels = {}, {}
         for i, instance in enumerate(tqdm.tqdm(self.samples, desc="Samples")):
             query = instance["query"]
@@ -347,14 +332,26 @@ class RerankingEvaluator(Evaluator):
             docs = list(instance["candidates"])
 
             if isinstance(query, str):
-                # .encoding interface requires List[str] as input
+                # .encoding interface requires list[str] as input
                 query_emb = np.asarray(
-                    encode_queries_func([query], **self.encode_kwargs)
+                    model.encode(
+                        [query],
+                        task_name=self.task_name,
+                        prompt_type=PromptType.query,
+                        **self.encode_kwargs,
+                    )
                 )
-                docs_emb = np.asarray(encode_corpus_func(docs, **self.encode_kwargs))
+                docs_emb = np.asarray(
+                    model.encode(
+                        docs,
+                        task_name=self.task_name,
+                        prompt_type=PromptType.passage,
+                        **self.encode_kwargs,
+                    )
+                )
 
             fake_qid = str(i)
-            results[fake_qid] = self.rerank(query_emb, docs_emb)
+            results[fake_qid] = self.rerank(query_emb, docs_emb, model)
             qrels[fake_qid] = {
                 str(i): 1 if doc in positive else 0 for i, doc in enumerate(docs)
             }
@@ -374,7 +371,7 @@ class RerankingEvaluator(Evaluator):
         return scores_miracl
 
     def rerank(
-        self, query_emb: torch.Tensor, docs_emb: torch.Tensor
+        self, query_emb: np.ndarray, docs_emb: np.ndarray, model: Encoder
     ) -> dict[str, float]:
         """Rerank documents (docs_emb) given the query (query_emb)
 
@@ -382,6 +379,7 @@ class RerankingEvaluator(Evaluator):
             query_emb: Query embedding of shape `(num_queries, hidden_size)`)
                 if `num_queries` > 0: we take the closest document to any of the queries
             docs_emb: Candidates documents embeddings of shape `(num_pos+num_neg, hidden_size)`)
+            model: Model to use for computing similarity scores if model.similarity is available
 
         Returns:
             similarity_scores:
@@ -392,7 +390,10 @@ class RerankingEvaluator(Evaluator):
         if not docs_emb.shape[0]:
             return {"empty-docid": 0}
 
-        pred_scores = self.similarity_fct(query_emb, docs_emb)
+        if hasattr(model, "similarity"):
+            pred_scores = model.similarity(query_emb, docs_emb)
+        else:
+            pred_scores = cos_sim(query_emb, docs_emb)
         if len(pred_scores.shape) > 1:
             pred_scores = torch.amax(pred_scores, dim=0)
 
@@ -408,8 +409,9 @@ class RerankingEvaluator(Evaluator):
         all_mrr_scores,
         all_ap_scores,
         all_conf_scores,
+        model: Encoder,
     ):
-        sim_scores = self._compute_sim_scores_instance(query_emb, docs_emb)
+        sim_scores = self._compute_sim_scores_instance(query_emb, docs_emb, model)
         scores = self._compute_metrics_instance(sim_scores, is_relevant)
         conf_scores = self.conf_scores(sim_scores.tolist())
 
@@ -420,8 +422,9 @@ class RerankingEvaluator(Evaluator):
     @staticmethod
     def _encode_unique_texts(
         all_texts: list[str],
-        encode_fn: Callable,
-        prompt_name: str | None,
+        model: Encoder,
+        task_name: str | None,
+        prompt_type: PromptType | None,
         **encode_kwargs: Any,
     ):
         index_map, all_unique_texts, all_texts_indexes = {}, [], []
@@ -432,15 +435,20 @@ class RerankingEvaluator(Evaluator):
                 all_unique_texts.append(text)
             all_texts_indexes.append(index_map[text_hash])
         logger.warning(
-            f"A total on {len(all_texts) - len(all_unique_texts)}/{len(all_texts)} duplicate texts were found during encoding. Only encoding unique text and duplicating embeddings across."
+            f"A total of {len(all_texts) - len(all_unique_texts)}/{len(all_texts)} duplicate texts were found during encoding. Only encoding unique text and duplicating embeddings across."
         )
         all_unique_texts_embs = np.asarray(
-            encode_fn(all_unique_texts, prompt_name=prompt_name, **encode_kwargs)
+            model.encode(
+                all_unique_texts,
+                task_name=task_name,
+                prompt_type=prompt_type,
+                **encode_kwargs,
+            )
         )
         return all_unique_texts_embs[all_texts_indexes]
 
     def _compute_sim_scores_instance(
-        self, query_emb: torch.Tensor, docs_emb: torch.Tensor
+        self, query_emb: np.ndarray, docs_emb: np.ndarray, model: Encoder
     ) -> torch.Tensor:
         """Computes similarity scores for a single instance = (query, positives, negatives)
 
@@ -448,19 +456,23 @@ class RerankingEvaluator(Evaluator):
             query_emb: Query embedding, with shape `(num_queries, hidden_size)`
                 if `num_queries` > 0: we take the closest document to any of the queries
             docs_emb: Candidates documents embeddings, with shape `(num_pos+num_neg, hidden_size)`
+            model: Model to use for computing similarity scores if model.similarity is available
 
         Returns:
             sim_scores: Query-documents similarity scores, with shape `(num_pos+num_neg,)`
         """
-        sim_scores = self.similarity_fct(query_emb, docs_emb)
+        if hasattr(model, "similarity"):
+            sim_scores = model.similarity(query_emb, docs_emb)
+        else:
+            sim_scores = cos_sim(query_emb, docs_emb)
         if len(sim_scores.shape) > 1:
             sim_scores = torch.amax(sim_scores, dim=0)
 
         return sim_scores
 
     def _compute_metrics_instance(
-        self, sim_scores: torch.Tensor, is_relevant: List[bool]
-    ) -> Dict[str, float]:
+        self, sim_scores: torch.Tensor, is_relevant: list[bool]
+    ) -> dict[str, float]:
         """Computes metrics for a single instance = (query, positives, negatives)
 
         Args:
@@ -478,7 +490,7 @@ class RerankingEvaluator(Evaluator):
         return {"mrr": mrr, "ap": ap}
 
     @staticmethod
-    def conf_scores(sim_scores: torch.Tensor) -> Dict[str, float]:
+    def conf_scores(sim_scores: torch.Tensor) -> dict[str, float]:
         """Computes confidence scores for a single instance = (query, positives, negatives)
 
         Args:
@@ -494,10 +506,10 @@ class RerankingEvaluator(Evaluator):
 
     @staticmethod
     def nAUC_scores(
-        all_conf_scores: List[Dict[str, float]],
-        metrics: List[float],
+        all_conf_scores: list[dict[str, float]],
+        metrics: list[float],
         metric_name: str,
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """Computes normalized Area Under the Curve on a set of evaluated instances as presented in the paper https://arxiv.org/abs/2402.12997
 
         Args:
@@ -547,8 +559,8 @@ class RerankingEvaluator(Evaluator):
         """Computes AP score
 
         Args:
-            is_relevant (`List[bool]` of length `num_pos+num_neg`): True if the document is relevant
-            pred_scores (`List[float]` of length `num_pos+num_neg`): Predicted similarity scores
+            is_relevant (`list[bool]` of length `num_pos+num_neg`): True if the document is relevant
+            pred_scores (`list[float]` of length `num_pos+num_neg`): Predicted similarity scores
 
         Returns:
             ap_score (`float`): AP score

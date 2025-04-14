@@ -23,14 +23,14 @@ class LegalQuAD(AbsTaskRetrieval):
         date=None,
         domains=["Legal", "Written"],
         task_subtypes=["Question answering"],
-        license="CC BY 4.0",
+        license="cc-by-4.0",
         annotations_creators="derived",
         dialect=None,
         sample_creation="found",
         bibtex_citation="""@INPROCEEDINGS{9723721,
   author={Hoppe, Christoph and Pelkmann, David and Migenda, Nico and Hötte, Daniel and Schenck, Wolfram},
-  booktitle={2021 IEEE Fourth International Conference on Artificial Intelligence and Knowledge Engineering (AIKE)}, 
-  title={Towards Intelligent Legal Advisors for Document Retrieval and Question-Answering in German Legal Documents}, 
+  booktitle={2021 IEEE Fourth International Conference on Artificial Intelligence and Knowledge Engineering (AIKE)},
+  title={Towards Intelligent Legal Advisors for Document Retrieval and Question-Answering in German Legal Documents},
   year={2021},
   volume={},
   number={},
@@ -38,16 +38,4 @@ class LegalQuAD(AbsTaskRetrieval):
   keywords={Knowledge engineering;Law;Semantic search;Conferences;Bit error rate;NLP;knowledge extraction;question-answering;semantic search;document retrieval;German language},
   doi={10.1109/AIKE52691.2021.00011}
   }""",
-        descriptive_stats={
-            "n_samples": None,
-            "avg_character_length": {
-                "test": {
-                    "average_document_length": 19481.955,
-                    "average_query_length": 71.965,
-                    "num_documents": 200,
-                    "num_queries": 200,
-                    "average_relevant_docs_per_query": 1.0,
-                }
-            },
-        },
     )

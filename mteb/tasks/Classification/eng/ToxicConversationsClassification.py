@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskClassification
 
 
 class ToxicConversationsClassification(AbsTaskClassification):
@@ -26,29 +25,21 @@ class ToxicConversationsClassification(AbsTaskClassification):
         ),  # Estimated range for the collection of comments
         domains=["Social", "Written"],
         task_subtypes=["Sentiment/Hate speech"],
-        license="CC BY 4.0",
+        license="cc-by-4.0",
         annotations_creators="human-annotated",
         dialect=[],
         sample_creation="found",
         bibtex_citation="""@misc{jigsaw-unintended-bias-in-toxicity-classification,
-    author = {cjadams, Daniel Borkan, inversion, Jeffrey Sorensen, Lucas Dixon, Lucy Vasserman, nithum},
+    author = {cjadams and Daniel Borkan and inversion and Jeffrey Sorensen and Lucas Dixon and Lucy Vasserman and nithum},
     title = {Jigsaw Unintended Bias in Toxicity Classification},
     publisher = {Kaggle},
     year = {2019},
     url = {https://kaggle.com/competitions/jigsaw-unintended-bias-in-toxicity-classification}
 }""",
-        descriptive_stats={
-            "n_samples": {"test": 50000},
-            "avg_character_length": {"test": 296.6},
-        },
+        prompt="Classify the given comments as either toxic or not toxic",
     )
 
-    @property
-    def metadata_dict(self) -> dict[str, str]:
-        metadata_dict = super().metadata_dict
-        metadata_dict["n_experiments"] = 10
-        metadata_dict["samples_per_label"] = 16
-        return metadata_dict
+    samples_per_label = 16
 
     def dataset_transform(self):
         self.dataset = self.stratified_subsampling(

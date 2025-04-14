@@ -4,7 +4,7 @@ import random
 
 import datasets
 
-from mteb.abstasks import AbsTaskBitextMining
+from mteb.abstasks.AbsTaskBitextMining import AbsTaskBitextMining
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
 TEST_SAMPLES = 2048
@@ -29,7 +29,7 @@ class VieMedEVBitextMining(AbsTaskBitextMining):
         date=("2024-08-28", "2022-03-28"),
         domains=["Medical", "Written"],
         task_subtypes=[],
-        license="cc-by-nc",
+        license="cc-by-nc-4.0",  # version is assumed, but was previously unspecified
         annotations_creators="expert-annotated",
         dialect=[],
         sample_creation="human-translated and localized",
@@ -39,10 +39,6 @@ class VieMedEVBitextMining(AbsTaskBitextMining):
     booktitle = {Proceedings of the 2024 Joint International Conference on Computational Linguistics, Language Resources and Evaluation (LREC-COLING)},
     year      = {2024}
 }""",
-        descriptive_stats={
-            "n_samples": {"test": TEST_SAMPLES},
-            "avg_character_length": {"test": 139.23},
-        },
     )
 
     def dataset_transform(self):
@@ -58,9 +54,9 @@ class VieMedEVBitextMining(AbsTaskBitextMining):
         # Pairs are in two halves
         en_sentences = all_texts[:mid_index]
         vie_sentences = all_texts[mid_index:]
-        assert len(en_sentences) == len(
-            vie_sentences
-        ), "The split does not result in equal halves."
+        assert len(en_sentences) == len(vie_sentences), (
+            "The split does not result in equal halves."
+        )
 
         # Downsample
         indices = list(range(len(en_sentences)))
@@ -68,9 +64,9 @@ class VieMedEVBitextMining(AbsTaskBitextMining):
         sample_indices = indices[:TEST_SAMPLES]
         en_sentences = [en_sentences[i] for i in sample_indices]
         vie_sentences = [vie_sentences[i] for i in sample_indices]
-        assert (
-            len(en_sentences) == len(vie_sentences) == TEST_SAMPLES
-        ), f"Exceeded {TEST_SAMPLES} samples for 'test' split."
+        assert len(en_sentences) == len(vie_sentences) == TEST_SAMPLES, (
+            f"Exceeded {TEST_SAMPLES} samples for 'test' split."
+        )
 
         # Return dataset
         ds["test"] = datasets.Dataset.from_dict(

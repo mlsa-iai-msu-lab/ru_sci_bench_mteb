@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from mteb.abstasks import AbsTaskClassification
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
 
@@ -23,12 +23,12 @@ class FrenkHrClassification(AbsTaskClassification):
         date=("2021-05-28", "2021-05-28"),
         domains=["Social", "Written"],
         task_subtypes=["Sentiment/Hate speech"],
-        license="Not specified",
+        license="not specified",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
         bibtex_citation="""@misc{ljubešić2019frenk,
-        title={The FRENK Datasets of Socially Unacceptable Discourse in Slovene and English}, 
+        title={The FRENK Datasets of Socially Unacceptable Discourse in Slovene and English},
         author={Nikola Ljubešić and Darja Fišer and Tomaž Erjavec},
         year={2019},
         eprint={1906.02045},
@@ -36,8 +36,4 @@ class FrenkHrClassification(AbsTaskClassification):
         primaryClass={cs.CL},
         url={https://arxiv.org/abs/1906.02045}
         }""",
-        descriptive_stats={
-            "n_samples": {"test": 2120},
-            "avg_character_length": {"test": 89.86},
-        },
     )

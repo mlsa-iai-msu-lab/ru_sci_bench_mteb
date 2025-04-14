@@ -29,23 +29,12 @@ class SCIDOCSPL(AbsTaskRetrieval):
         dialect=None,
         sample_creation=None,
         bibtex_citation="""@misc{wojtasik2024beirpl,
-      title={BEIR-PL: Zero Shot Information Retrieval Benchmark for the Polish Language}, 
+      title={BEIR-PL: Zero Shot Information Retrieval Benchmark for the Polish Language},
       author={Konrad Wojtasik and Vadim Shishkin and Kacper Wołowiec and Arkadiusz Janz and Maciej Piasecki},
       year={2024},
       eprint={2305.19840},
       archivePrefix={arXiv},
       primaryClass={cs.IR}
 }""",
-        descriptive_stats={
-            "n_samples": None,
-            "avg_character_length": {
-                "test": {
-                    "average_document_length": 1270.0791986592353,
-                    "average_query_length": 80.671,
-                    "num_documents": 25657,
-                    "num_queries": 1000,
-                    "average_relevant_docs_per_query": 4.928,
-                }
-            },
-        },
+        adapted_from=["SCIDOCS"],
     )

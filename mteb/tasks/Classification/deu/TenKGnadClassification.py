@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskClassification
 
 
 class TenKGnadClassification(AbsTaskClassification):
@@ -40,8 +39,4 @@ class TenKGnadClassification(AbsTaskClassification):
                 Month     = aug
                 }
         """,
-        descriptive_stats={
-            "n_samples": {"test": 1028},
-            "avg_character_length": {"test": 2627.31},
-        },
     )

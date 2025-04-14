@@ -7,7 +7,8 @@ from typing import get_args
 import polars as pl
 
 import mteb
-from mteb.abstasks.TaskMetadata import PROGRAMMING_LANGS, TASK_TYPE
+from mteb.abstasks.TaskMetadata import TASK_TYPE
+from mteb.languages import ISO_TO_FAM_LEVEL0, ISO_TO_LANGUAGE, PROGRAMMING_LANGS
 
 
 def author_from_bibtex(bibtex: str | None) -> str:
@@ -32,41 +33,45 @@ def author_from_bibtex(bibtex: str | None) -> str:
     return f" ({author_str_w_et_al}, {year_str})"
 
 
+def round_floats_in_dict(d: dict, precision: int = 2) -> dict:
+    if not isinstance(d, dict):
+        return d
+    for key, value in d.items():
+        if isinstance(value, float):
+            d[key] = round(value, precision)
+        elif isinstance(value, dict):
+            d[key] = round_floats_in_dict(value, precision)
+    return d
+
+
 def task_to_markdown_row(task: mteb.AbsTask) -> str:
     name = task.metadata.name
     name_w_reference = (
         f"[{name}]({task.metadata.reference})" if task.metadata.reference else name
     )
     domains = (
-        "[" + ", ".join(task.metadata.domains) + "]" if task.metadata.domains else ""
-    )
-    n_samples = (
-        task.metadata.descriptive_stats["n_samples"]
-        if "n_samples" in task.metadata.descriptive_stats
+        "[" + ", ".join(sorted(task.metadata.domains)) + "]"
+        if task.metadata.domains
         else ""
     )
-    avg_character_length = (
-        task.metadata.descriptive_stats["avg_character_length"]
-        if "avg_character_length" in task.metadata.descriptive_stats
-        else ""
-    )
-
+    n_samples = task.metadata.n_samples
+    dataset_statistics = round_floats_in_dict(task.metadata.descriptive_stats)
     name_w_reference += author_from_bibtex(task.metadata.bibtex_citation)
 
-    return f"| {name_w_reference} | {task.metadata.languages} | {task.metadata.type} | {task.metadata.category} | {domains} | {n_samples} | {avg_character_length} |"
+    return f"| {name_w_reference} | {task.metadata.languages} | {task.metadata.type} | {task.metadata.category} | {domains} | {n_samples} | {dataset_statistics} |"
 
 
 def create_tasks_table(tasks: list[mteb.AbsTask]) -> str:
     table = """
-| Name | Languages | Type | Category | Domains | # Samples | Avg. Length (Char.) |
-|------|-----------|------|----------|---------|-----------|---------------------|
+| Name | Languages | Type | Category | Domains | # Samples | Dataset statistics |
+|------|-----------|------|----------|---------|-----------|--------------------|
 """
     for task in tasks:
         table += task_to_markdown_row(task) + "\n"
     return table
 
 
-def create_task_lang_table(tasks: list[mteb.AbsTask]) -> str:
+def create_task_lang_table(tasks: list[mteb.AbsTask], sort_by_sum=False) -> str:
     table_dict = {}
     ## Group by language. If it is a multilingual dataset, 1 is added to all languages present.
     for task in tasks:
@@ -80,22 +85,39 @@ def create_task_lang_table(tasks: list[mteb.AbsTask]) -> str:
     ## Wrangle for polars
     pl_table_dict = []
     for lang, d in table_dict.items():
-        d.update({"lang": lang})
+        d.update({"0-lang-code": lang})  # for sorting columns
         pl_table_dict.append(d)
 
-    df = pl.DataFrame(pl_table_dict).sort(by="lang")
-    total = df.sum()
+    df = pl.DataFrame(pl_table_dict).sort(by="0-lang-code")
+    df = df.with_columns(
+        pl.col("0-lang-code")
+        .replace_strict(ISO_TO_LANGUAGE, default="unknown")
+        .alias("1-lang-name")
+    )
+    df = df.with_columns(
+        pl.col("0-lang-code")
+        .replace_strict(ISO_TO_FAM_LEVEL0, default="Unclassified")
+        .alias("2-lang-fam")
+    )
 
-    task_names_md = " | ".join(sorted(get_args(TASK_TYPE)))
-    horizontal_line_md = "---|---" * len(sorted(get_args(TASK_TYPE)))
-    table = """
-| Language | {} |
-|{}|
-""".format(task_names_md, horizontal_line_md)
+    df = df.with_columns(sum=pl.sum_horizontal(get_args(TASK_TYPE)))
+    df = df.select(sorted(df.columns))
+    if sort_by_sum:
+        df = df.sort(by="sum", descending=True)
+
+    total = df.sum()
+    task_names = sorted(get_args(TASK_TYPE))
+    headers = ["ISO Code", "Language", "Family"] + task_names + ["Sum"]
+    table_header = "| " + " | ".join(headers) + " |"
+    separator_line = "|"
+    for header in headers:
+        width = len(header) + 2
+        separator_line += "-" * width + "|"
+    table = table_header + "\n" + separator_line + "\n"
 
     for row in df.iter_rows():
-        table += f"| {row[-1]} "
-        for num in row[:-1]:
+        table += f"| {row[0]} "
+        for num in row[1:]:
             table += f"| {num} "
         table += "|\n"
 
@@ -112,14 +134,18 @@ def insert_tables(
     file_path: str, tables: list[str], tags: list[str] = ["TASKS TABLE"]
 ) -> None:
     """Insert tables within <!-- TABLE START --> and <!-- TABLE END --> or similar tags."""
-    md = Path(file_path).read_text()
+    md = Path(file_path).read_text(encoding="utf-8")
 
     for table, tag in zip(tables, tags):
         start = f"<!-- {tag} START -->"
         end = f"<!-- {tag} END -->"
-        md = md.replace(md[md.index(start) + len(start) : md.index(end)], table)
+        # Ensure a newline after the start tag
+        md = md.replace(
+            md[md.index(start) + len(start) : md.index(end)],
+            f"\n{table}\n",
+        )
 
-    Path(file_path).write_text(md)
+    Path(file_path).write_text(md, encoding="utf-8")
 
 
 def main():

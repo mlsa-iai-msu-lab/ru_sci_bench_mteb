@@ -50,25 +50,13 @@ class GermanQuADRetrieval(AbsTaskRetrieval):
         dialect=None,
         sample_creation=None,
         bibtex_citation="""misc{möller2021germanquad,
-      title={GermanQuAD and GermanDPR: Improving Non-English Question Answering and Passage Retrieval}, 
+      title={GermanQuAD and GermanDPR: Improving Non-English Question Answering and Passage Retrieval},
       author={Timo Möller and Julian Risch and Malte Pietsch},
       year={2021},
       eprint={2104.12741},
       archivePrefix={arXiv},
       primaryClass={cs.CL}
 }""",
-        descriptive_stats={
-            "n_samples": None,
-            "avg_character_length": {
-                "test": {
-                    "average_document_length": 1941.090717299578,
-                    "average_query_length": 56.74773139745916,
-                    "num_documents": 474,
-                    "num_queries": 2204,
-                    "average_relevant_docs_per_query": 1.0,
-                }
-            },
-        },
     )
 
     def load_data(self, **kwargs):

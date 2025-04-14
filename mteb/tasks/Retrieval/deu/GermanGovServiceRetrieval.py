@@ -35,7 +35,7 @@ class GermanGovServiceRetrieval(AbsTaskRetrieval):
         bibtex_citation="""@software{lhm-dienstleistungen-qa,
   author       = {Schröder, Leon Marius and
                   Gutknecht, Clemens and
-                  Alkiddeh, Oubada and 
+                  Alkiddeh, Oubada and
                   Susanne Weiß,
                   Lukas, Leon},
   title        = {LHM-Dienstleistungen-QA - german public domain question-answering dataset},
@@ -45,18 +45,6 @@ class GermanGovServiceRetrieval(AbsTaskRetrieval):
   url          = {https://huggingface.co/datasets/it-at-m/LHM-Dienstleistungen-QA}
 }""",
         sample_creation="found",
-        descriptive_stats={
-            "n_samples": {"test": 357},
-            "avg_character_length": {
-                "test": {
-                    "average_document_length": 1246.4571428571428,
-                    "average_query_length": 68.17977528089888,
-                    "num_documents": 105,
-                    "num_queries": 356,
-                    "average_relevant_docs_per_query": 1.0,
-                }
-            },
-        },
     )
 
     @staticmethod

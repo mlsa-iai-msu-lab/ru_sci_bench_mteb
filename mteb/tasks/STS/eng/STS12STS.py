@@ -23,7 +23,7 @@ class STS12STS(AbsTaskSTS):
         date=("2005-01-01", "2012-12-31"),
         domains=["Encyclopaedic", "News", "Written"],
         task_subtypes=[],
-        license="Not specified",
+        license="not specified",
         annotations_creators="human-annotated",
         dialect=[],
         sample_creation="created",
@@ -40,10 +40,6 @@ numpages = {9},
 location = {Montr\'{e}al, Canada},
 series = {SemEval '12}
 }""",
-        descriptive_stats={
-            "n_samples": {"test": 6216},
-            "avg_character_length": {"test": 64.7},
-        },
     )
 
     @property

@@ -24,9 +24,9 @@ class STSES(AbsTaskSTS):
         eval_langs=["spa-Latn"],
         main_score="cosine_spearman",
         date=None,
-        domains=None,
+        domains=["Written"],
         task_subtypes=None,
-        license=None,
+        license="cc-by-4.0",
         annotations_creators=None,
         dialect=None,
         sample_creation=None,
@@ -47,7 +47,6 @@ class STSES(AbsTaskSTS):
   year={2014}
 }
 """,
-        descriptive_stats={"n_samples": None, "avg_character_length": None},
     )
 
     @property

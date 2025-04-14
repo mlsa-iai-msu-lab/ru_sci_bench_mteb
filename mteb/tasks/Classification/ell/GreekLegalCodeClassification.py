@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from mteb.abstasks import AbsTaskClassification
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
 TEST_SAMPLES = 2048
@@ -41,10 +41,6 @@ class GreekLegalCodeClassification(AbsTaskClassification):
     pages = "63--75"
 }
 """,
-        descriptive_stats={
-            "n_samples": {"validation": TEST_SAMPLES, "test": TEST_SAMPLES},
-            "avg_character_length": {"validation": 4046.8, "test": 4200.8},
-        },
     )
 
     def dataset_transform(self):

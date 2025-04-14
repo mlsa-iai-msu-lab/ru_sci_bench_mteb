@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskBitextMining import AbsTaskBitextMining
+from mteb.abstasks.MultilingualTask import MultilingualTask
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskBitextMining, MultilingualTask
 
 _LANGUAGES = {
     "eng-ace": ["eng-Latn", "ace-Latn"],
@@ -37,7 +37,7 @@ class NusaXBitextMining(AbsTaskBitextMining, MultilingualTask):
         date=("2021-08-01", "2022-07-01"),
         domains=["Reviews", "Written"],
         task_subtypes=[],
-        license="CC BY-SA 4.0",
+        license="cc-by-sa-4.0",
         annotations_creators="human-annotated",
         dialect=[],
         sample_creation="created",
@@ -50,7 +50,7 @@ class NusaXBitextMining(AbsTaskBitextMining, MultilingualTask):
         year={2023}
         }
         @misc{winata2024miners,
-            title={MINERS: Multilingual Language Models as Semantic Retrievers}, 
+            title={MINERS: Multilingual Language Models as Semantic Retrievers},
             author={Genta Indra Winata and Ruochen Zhang and David Ifeoluwa Adelani},
             year={2024},
             eprint={2406.07424},
@@ -58,8 +58,4 @@ class NusaXBitextMining(AbsTaskBitextMining, MultilingualTask):
             primaryClass={cs.CL}
         }
         """,
-        descriptive_stats={
-            "n_samples": {"train": 5500},
-            "avg_character_length": {"train": 157.15},
-        },
     )

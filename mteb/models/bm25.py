@@ -2,32 +2,29 @@ from __future__ import annotations
 
 import logging
 from functools import partial
-from typing import Any, List, Optional, Union
 
 from mteb.evaluation.evaluators.RetrievalEvaluator import DRESModel
 from mteb.model_meta import ModelMeta
-from mteb.models.text_formatting_utils import corpus_to_texts
+from mteb.models.wrapper import Wrapper
+from mteb.requires_package import requires_package
 
 logger = logging.getLogger(__name__)
 
 
 def bm25_loader(**kwargs):
-    try:
-        import bm25s
-        import Stemmer
-    except ImportError:
-        raise ImportError(
-            "bm25s or Stemmer is not installed. Please install it with `pip install bm25s Stemmer`."
-        )
+    model_name = kwargs.get("model_name", "BM25")
+    requires_package(bm25_loader, "bm25s", model_name, "pip install mteb[bm25s]")
+    import bm25s
+    import Stemmer
 
-    class BM25Search(DRESModel):
+    class BM25Search(DRESModel, Wrapper):
         """BM25 search"""
 
         def __init__(
             self,
             previous_results: str = None,
             stopwords: str = "en",
-            stemmer_language: Optional[str] = "english",
+            stemmer_language: str | None = "english",
             **kwargs,
         ):
             super().__init__(
@@ -50,7 +47,7 @@ def bm25_loader(**kwargs):
         def search(
             self,
             corpus: dict[str, dict[str, str]],
-            queries: dict[str, Union[str, List[str]]],
+            queries: dict[str, str | list[str]],
             top_k: int,
             score_function: str,
             return_sorted: bool = False,
@@ -58,7 +55,17 @@ def bm25_loader(**kwargs):
         ) -> dict[str, dict[str, float]]:
             logger.info("Encoding Corpus...")
             corpus_ids = list(corpus.keys())
-            corpus_with_ids = [{"doc_id": cid, **corpus[cid]} for cid in corpus_ids]
+            corpus_with_ids = [
+                {
+                    "doc_id": cid,
+                    **(
+                        {"text": corpus[cid]}
+                        if isinstance(corpus[cid], str)
+                        else corpus[cid]
+                    ),
+                }
+                for cid in corpus_ids
+            ]
 
             corpus_texts = [
                 "\n".join([doc.get("title", ""), doc["text"]])
@@ -106,26 +113,9 @@ def bm25_loader(**kwargs):
 
             return self.results
 
-        def encode(self, texts: List[str], **kwargs):
+        def encode(self, texts: list[str], **kwargs):
             """Encode input text as term vectors"""
             return bm25s.tokenize(texts, stopwords=self.stopwords, stemmer=self.stemmer)
-
-        def encode_queries(
-            self,
-            queries: list[str],
-            batch_size: int = 32,
-            **kwargs: Any,
-        ):
-            return self.encode(queries, kwargs=kwargs)
-
-        def encode_corpus(
-            self,
-            corpus: list[dict[str, str]] | dict[str, list[str]],
-            batch_size: int = 32,
-            **kwargs: Any,
-        ):
-            sentences = corpus_to_texts(corpus)
-            return self.encode(sentences, kwargs=kwargs)
 
     return BM25Search(**kwargs)
 
@@ -133,8 +123,20 @@ def bm25_loader(**kwargs):
 bm25_s = ModelMeta(
     loader=partial(bm25_loader, model_name="bm25s"),  # type: ignore
     name="bm25s",
-    languages=["eng_Latn"],
-    open_source=True,
+    languages=["eng-Latn"],
+    open_weights=True,
     revision="0_1_10",
     release_date="2024-07-10",  ## release of version 0.1.10
+    n_parameters=None,
+    memory_usage_mb=None,
+    embed_dim=None,
+    license=None,
+    max_tokens=None,
+    reference="https://github.com/xhluca/bm25s",
+    similarity_fn_name=None,
+    framework=[],
+    use_instructions=False,
+    public_training_code="https://github.com/xhluca/bm25s",
+    public_training_data=None,
+    training_datasets=None,
 )

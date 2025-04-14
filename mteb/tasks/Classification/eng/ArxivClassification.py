@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskClassification
 
 
 class ArxivClassification(AbsTaskClassification):
@@ -24,19 +23,18 @@ class ArxivClassification(AbsTaskClassification):
         date=("1998-11-11", "2019-03-28"),
         domains=["Academic", "Written"],
         task_subtypes=["Topic classification"],
-        license="Not specified",
+        license="not specified",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
         bibtex_citation="""@ARTICLE{8675939,
         author={He, Jun and Wang, Liqun and Liu, Liu and Feng, Jiao and Wu, Hao},
-        journal={IEEE Access}, 
-        title={Long Document Classification From Local Word Glimpses via Recurrent Attention Learning}, 
+        journal={IEEE Access},
+        title={Long Document Classification From Local Word Glimpses via Recurrent Attention Learning},
         year={2019},
         volume={7},
         number={},
         pages={40707-40718},
         doi={10.1109/ACCESS.2019.2907992}
         }""",
-        descriptive_stats={"n_samples": {"test": 2048}, "avg_character_length": {}},
     )

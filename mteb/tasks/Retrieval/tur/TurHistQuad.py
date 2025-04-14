@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import datasets
 
-from mteb.abstasks import AbsTaskRetrieval, TaskMetadata
+from mteb.abstasks.AbsTaskRetrieval import AbsTaskRetrieval
+from mteb.abstasks.TaskMetadata import TaskMetadata
 
 
 class TurHistQuadRetrieval(AbsTaskRetrieval):
@@ -21,15 +24,15 @@ class TurHistQuadRetrieval(AbsTaskRetrieval):
         date=("2021-01-01", "2021-10-13"),
         task_subtypes=["Question answering"],
         domains=["Encyclopaedic", "Non-fiction", "Academic", "Written"],
-        license="MIT",
+        license="mit",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
         bibtex_citation="""
             @INPROCEEDINGS{9559013,
                 author={Soygazi, Fatih and Çiftçi, Okan and Kök, Uğurcan and Cengiz, Soner},
-                booktitle={2021 6th International Conference on Computer Science and Engineering (UBMK)}, 
-                title={THQuAD: Turkish Historic Question Answering Dataset for Reading Comprehension}, 
+                booktitle={2021 6th International Conference on Computer Science and Engineering (UBMK)},
+                title={THQuAD: Turkish Historic Question Answering Dataset for Reading Comprehension},
                 year={2021},
                 volume={},
                 number={},
@@ -38,26 +41,14 @@ class TurHistQuadRetrieval(AbsTaskRetrieval):
                 doi={10.1109/UBMK52708.2021.9559013}}
 
         """,
-        descriptive_stats={
-            "n_samples": {"test": 1330},
-            "avg_character_length": {
-                "test": {
-                    "average_document_length": 172.12118713932398,
-                    "average_query_length": 62.5302734375,
-                    "num_documents": 1213,
-                    "num_queries": 1024,
-                    "average_relevant_docs_per_query": 2.0,
-                }
-            },
-        },
     )
 
     def load_data(self, **kwargs) -> None:
         """And transform to a retrieval datset, which have the following attributes
 
-        self.corpus = Dict[doc_id, Dict[str, str]] #id => dict with document datas like title and text
-        self.queries = Dict[query_id, str] #id => query
-        self.relevant_docs = Dict[query_id, Dict[[doc_id, score]]
+        self.corpus = dict[doc_id, dict[str, str]] #id => dict with document datas like title and text
+        self.queries = dict[query_id, str] #id => query
+        self.relevant_docs = dict[query_id, dict[[doc_id, score]]
         """
         if self.data_loaded:
             return

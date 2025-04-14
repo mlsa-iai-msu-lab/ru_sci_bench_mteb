@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from mteb.abstasks import AbsTaskClassification
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
 
@@ -28,13 +28,13 @@ class NordicLangClassification(AbsTaskClassification):
             "fao-Latn",
         ],
         main_score="accuracy",
-        date=None,
-        domains=None,
-        task_subtypes=None,
-        license=None,
-        annotations_creators=None,
-        dialect=None,
-        sample_creation=None,
+        date=("2020-01-01", "2021-12-31"),  # best guess, year of publication
+        domains=["Encyclopaedic"],
+        task_subtypes=["Language identification"],
+        license="cc-by-sa-3.0",
+        annotations_creators="derived",
+        dialect=[],
+        sample_creation="found",
         bibtex_citation="""@inproceedings{haas-derczynski-2021-discriminating,
     title = "Discriminating Between Similar {N}ordic Languages",
     author = "Haas, Ren{\'e}  and
@@ -55,18 +55,10 @@ class NordicLangClassification(AbsTaskClassification):
     abstract = "Automatic language identification is a challenging problem. Discriminating between closely related languages is especially difficult. This paper presents a machine learning approach for automatic language identification for the Nordic languages, which often suffer miscategorisation by existing state-of-the-art tools. Concretely we will focus on discrimination between six Nordic languages: Danish, Swedish, Norwegian (Nynorsk), Norwegian (Bokm{\aa}l), Faroese and Icelandic.",
 }
 """,
-        descriptive_stats={
-            "n_samples": {"test": 3000},
-            "avg_character_length": {"test": 78.2},
-        },
+        prompt="Classify texts based on language",
     )
 
-    @property
-    def metadata_dict(self) -> dict[str, str]:
-        metadata_dict = super().metadata_dict
-        metadata_dict["n_experiments"] = 10
-        metadata_dict["samples_per_label"] = 32
-        return metadata_dict
+    samples_per_label = 32
 
     def dataset_transform(self):
         self.dataset = self.dataset.rename_columns(

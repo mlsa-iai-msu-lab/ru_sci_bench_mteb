@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from mteb.abstasks import AbsTaskClassification
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
 
@@ -26,7 +26,7 @@ class DanishPoliticalCommentsClassification(AbsTaskClassification):
         ),  # Estimated range for the collection of comments
         domains=["Social", "Written"],
         task_subtypes=["Sentiment/Hate speech"],
-        license="Not specified",
+        license="not specified",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
@@ -36,18 +36,10 @@ class DanishPoliticalCommentsClassification(AbsTaskClassification):
   year={2019},
   institution={IT University of Copenhagen},
 }""",
-        descriptive_stats={
-            "n_samples": {"train": 9010},
-            "avg_character_length": {"train": 69.9},
-        },
+        prompt="Classify Danish political comments for sentiment",
     )
 
-    @property
-    def metadata_dict(self) -> dict[str, str]:
-        metadata_dict = dict(self.metadata)
-        metadata_dict["n_experiments"] = 10
-        metadata_dict["samples_per_label"] = 16
-        return metadata_dict
+    samples_per_label = 16
 
     def dataset_transform(self):
         self.dataset = self.dataset.rename_column("sentence", "text")

@@ -23,12 +23,12 @@ class LegalBenchCorporateLobbying(AbsTaskRetrieval):
         date=None,
         domains=["Legal", "Written"],
         task_subtypes=["Article retrieval"],
-        license="CC BY 4.0",
+        license="cc-by-4.0",
         annotations_creators="derived",
         dialect=None,
         sample_creation="found",
         bibtex_citation="""@misc{guha2023legalbench,
-      title={LegalBench: A Collaboratively Built Benchmark for Measuring Legal Reasoning in Large Language Models}, 
+      title={LegalBench: A Collaboratively Built Benchmark for Measuring Legal Reasoning in Large Language Models},
       author={Neel Guha and Julian Nyarko and Daniel E. Ho and Christopher Ré and Adam Chilton and Aditya Narayana and Alex Chohlas-Wood and Austin Peters and Brandon Waldon and Daniel N. Rockmore and Diego Zambrano and Dmitry Talisman and Enam Hoque and Faiz Surani and Frank Fagan and Galit Sarfaty and Gregory M. Dickinson and Haggai Porat and Jason Hegland and Jessica Wu and Joe Nudell and Joel Niklaus and John Nay and Jonathan H. Choi and Kevin Tobia and Margaret Hagan and Megan Ma and Michael Livermore and Nikon Rasumov-Rahe and Nils Holzenberger and Noam Kolt and Peter Henderson and Sean Rehaag and Sharad Goel and Shang Gao and Spencer Williams and Sunny Gandhi and Tom Zur and Varun Iyer and Zehua Li},
       year={2023},
       eprint={2308.11462},
@@ -97,16 +97,4 @@ class LegalBenchCorporateLobbying(AbsTaskRetrieval):
   publisher={Springer}
 }
 """,
-        descriptive_stats={
-            "n_samples": None,
-            "avg_character_length": {
-                "test": {
-                    "average_document_length": 1157.2225705329154,
-                    "average_query_length": 177.87941176470588,
-                    "num_documents": 319,
-                    "num_queries": 340,
-                    "average_relevant_docs_per_query": 1.0,
-                }
-            },
-        },
     )

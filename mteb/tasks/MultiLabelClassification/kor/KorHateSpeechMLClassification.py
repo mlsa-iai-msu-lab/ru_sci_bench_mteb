@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from mteb.abstasks import AbsTaskMultilabelClassification
+from mteb.abstasks.AbsTaskMultilabelClassification import (
+    AbsTaskMultilabelClassification,
+)
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
 
@@ -14,7 +16,7 @@ class KorHateSpeechMLClassification(AbsTaskMultilabelClassification):
         For more details, please refer to the paper about K-MHaS, published at COLING 2022.
         This dataset is based on the Korean online news comments available on Kaggle and Github.
         The unlabeled raw data was collected between January 2018 and June 2020.
-        The language producers are users who left the comments on the Korean online news platform between 2018 and 2020. 
+        The language producers are users who left the comments on the Korean online news platform between 2018 and 2020.
         """,
         dataset={
             "path": "jeanlee/kmhas_korean_hate_speech",
@@ -53,10 +55,6 @@ class KorHateSpeechMLClassification(AbsTaskMultilabelClassification):
             url = "https://aclanthology.org/2022.coling-1.311",
             pages = "3530--3538",
         }""",
-        descriptive_stats={
-            "n_samples": {"train": 8192, "test": 2048},
-            "avg_character_length": {"train": 33.67, "test": 34.67},
-        },
     )
 
     def dataset_transform(self):

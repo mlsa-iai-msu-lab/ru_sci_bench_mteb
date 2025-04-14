@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from mteb.abstasks import AbsTaskSTS, MultilingualTask, TaskMetadata
+from mteb.abstasks.AbsTaskSTS import AbsTaskSTS
+from mteb.abstasks.MultilingualTask import MultilingualTask
+from mteb.abstasks.TaskMetadata import TaskMetadata
 
 _LANGUAGES = {
     "afr": ["afr-Latn"],
@@ -29,9 +31,9 @@ class SemRel24STS(AbsTaskSTS, MultilingualTask):
         },
         description=(
             "SemRel2024 is a collection of Semantic Textual Relatedness (STR) datasets for 14 languages, "
-            "including African and Asian languages. The datasets are composed of sentence pairs, each assigned a "
-            "relatedness score between 0 (completely) unrelated and 1 (maximally related) with a large range of "
-            "expected relatedness values."
+            + "including African and Asian languages. The datasets are composed of sentence pairs, each assigned a "
+            + "relatedness score between 0 (completely) unrelated and 1 (maximally related) with a large range of "
+            + "expected relatedness values."
         ),
         reference="https://huggingface.co/datasets/SemRel/SemRel2024",
         type="STS",
@@ -43,12 +45,12 @@ class SemRel24STS(AbsTaskSTS, MultilingualTask):
         date=("2023-01-01", "2023-12-31"),
         domains=["Spoken", "Written"],
         task_subtypes=[],
-        license="Not specified",
+        license="not specified",
         annotations_creators="human-annotated",
         dialect=[],
         sample_creation="created",
         bibtex_citation="""@misc{ousidhoum2024semrel2024,
-        title={SemRel2024: A Collection of Semantic Textual Relatedness Datasets for 14 Languages}, 
+        title={SemRel2024: A Collection of Semantic Textual Relatedness Datasets for 14 Languages},
         author={Nedjma Ousidhoum and Shamsuddeen Hassan Muhammad and Mohamed Abdalla and Idris Abdulmumin and Ibrahim Said Ahmad and
         Sanchit Ahuja and Alham Fikri Aji and Vladimir Araujo and Abinew Ali Ayele and Pavan Baswani and Meriem Beloucif and
         Chris Biemann and Sofia Bourhim and Christine De Kock and Genet Shanko Dekebo and
@@ -61,10 +63,6 @@ class SemRel24STS(AbsTaskSTS, MultilingualTask):
               primaryClass={cs.CL}
         }
         """,
-        descriptive_stats={
-            "n_samples": {"dev": 2089, "test": 7498},
-            "avg_character_length": {"dev": 163.1, "test": 145.9},
-        },
     )
 
     @property

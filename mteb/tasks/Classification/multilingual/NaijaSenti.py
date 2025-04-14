@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 from typing import Any
 
 import datasets
 
-from mteb.abstasks import AbsTaskClassification, MultilingualTask
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
+from mteb.abstasks.MultilingualTask import MultilingualTask
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
 
@@ -30,7 +33,7 @@ class NaijaSenti(AbsTaskClassification, MultilingualTask):
         date=("2022-05-01", "2023-05-08"),
         domains=["Social", "Written"],
         task_subtypes=["Sentiment/Hate speech"],
-        license="CC-BY-4.0 license",
+        license="cc-by-4.0",
         annotations_creators="expert-annotated",
         dialect=[],
         sample_creation="found",
@@ -57,10 +60,6 @@ class NaijaSenti(AbsTaskClassification, MultilingualTask):
         url = "https://aclanthology.org/2022.lrec-1.63",
         pages = "590--602",
     }""",
-        descriptive_stats={
-            "n_samples": {"test": 4800},
-            "avg_character_length": {"test": 72.81},
-        },
     )
 
     def load_data(self, **kwargs: Any) -> None:

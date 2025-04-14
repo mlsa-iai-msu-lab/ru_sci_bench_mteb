@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import datasets
 
-from mteb.abstasks import TaskMetadata
 from mteb.abstasks.AbsTaskClusteringFast import AbsTaskClusteringFast
+from mteb.abstasks.TaskMetadata import TaskMetadata
 
 
 def dataset_transform(self):
@@ -76,7 +76,7 @@ class SwednClusteringP2P(AbsTaskClusteringFast):
         main_score="v_measure",
         date=("2000-01-01", "2020-12-31"),  # best guess
         domains=["News", "Non-fiction", "Written"],
-        license=None,
+        license="cc-by-4.0",
         annotations_creators="derived",
         dialect=[],
         task_subtypes=["Thematic clustering"],
@@ -87,10 +87,7 @@ class SwednClusteringP2P(AbsTaskClusteringFast):
   booktitle={Proceedings of CLARIN Annual Conference},
   year={2021}
 }""",
-        descriptive_stats={
-            "n_samples": {"all": 2048},
-            "avg_character_length": {"all": 1619.71},
-        },
+        prompt="Identify news categories in Swedish passages",
     )
 
     def dataset_transform(self):
@@ -119,7 +116,7 @@ class SwednClusteringFastS2S(AbsTaskClusteringFast):
         main_score="v_measure",
         date=("2000-01-01", "2020-12-31"),  # best guess
         domains=["News", "Non-fiction", "Written"],
-        license=None,
+        license="cc-by-4.0",
         annotations_creators="derived",
         dialect=[],
         task_subtypes=["Thematic clustering"],
@@ -130,10 +127,7 @@ class SwednClusteringFastS2S(AbsTaskClusteringFast):
   booktitle={Proceedings of CLARIN Annual Conference},
   year={2021}
 }""",
-        descriptive_stats={
-            "n_samples": {"all": 2048},
-            "avg_character_length": {"all": 1619.71},
-        },
+        prompt="Identify news categories in Swedish passages",
     )
 
     def dataset_transform(self):

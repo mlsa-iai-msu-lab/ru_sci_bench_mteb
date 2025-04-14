@@ -9,9 +9,9 @@ MTEB is a benchmark for evaluating the quality of embeddings in various tasks. I
 ## Running Models on Tasks
 
 To run a model on a set of tasks, use the `mteb run` command. For example:
-    
+
 ```bash
-mteb run -m average_word_embeddings_komninos \
+mteb run -m sentence-transformers/average_word_embeddings_komninos \
          -t Banking77Classification EmotionClassification \
          --output_folder mteb_output \
           --verbosity 3
@@ -30,18 +30,26 @@ mteb available_tasks # list all available tasks
 mteb available_tasks --task_types Clustering # list tasks of type Clustering
 ```
 
+## Listing Available Benchmarks
+
+To list the available benchmarks within MTEB, use the `mteb available_benchmarks` command. For example:
+
+```bash
+mteb available_benchmarks # list all available benchmarks
+```
+
 
 ## Creating Model Metadata
 
 Once a model is run you can create the metadata for a model card from a folder of results, use the `mteb create_meta` command. For example:
 
 ```bash
-mteb create_meta --results_folder mteb_output/average_word_embeddings_komninos/{revision} \
+mteb create_meta --results_folder mteb_output/sentence-transformers__average_word_embeddings_komninos/{revision} \
                  --output_path model_card.md
 ```
 
 This will create a model card at `model_card.md` containing the metadata for the model on MTEB within the YAML frontmatter. This will make the model
-discoverable on the MTEB leaderboard. 
+discoverable on the MTEB leaderboard.
 
 An example frontmatter for a model card is shown below:
 
@@ -72,13 +80,13 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import warnings
 from pathlib import Path
 
 import torch
-import yaml
 
 import mteb
-from mteb.load_results.mteb_results import CQADupstackRetrievalDummy, MTEBResults
+from mteb.create_meta import generate_readme
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -115,17 +123,25 @@ def run(args: argparse.Namespace) -> None:
 
     model = mteb.get_model(args.model, args.model_revision, device=device)
 
-    tasks = mteb.get_tasks(
-        categories=args.categories,
-        task_types=args.task_types,
-        languages=args.languages,
-        tasks=args.tasks,
-    )
+    if args.benchmarks:
+        tasks = mteb.get_benchmarks(names=args.benchmarks)
+    else:
+        tasks = mteb.get_tasks(
+            categories=args.categories,
+            task_types=args.task_types,
+            languages=args.languages,
+            tasks=args.tasks,
+        )
+
     eval = mteb.MTEB(tasks=tasks)
 
     encode_kwargs = {}
     if args.batch_size is not None:
         encode_kwargs["batch_size"] = args.batch_size
+
+    save_predictions = (
+        args.save_predictions if hasattr(args, "save_predictions") else False
+    )
 
     eval.run(
         model,
@@ -135,9 +151,16 @@ def run(args: argparse.Namespace) -> None:
         co2_tracker=args.co2_tracker,
         overwrite_results=args.overwrite,
         encode_kwargs=encode_kwargs,
+        save_predictions=save_predictions,
     )
 
     _save_model_metadata(model, Path(args.output_folder))
+
+
+def available_benchmarks(args: argparse.Namespace) -> None:
+    benchmarks = mteb.get_benchmarks(names=args.benchmarks)
+    eval = mteb.MTEB(tasks=benchmarks)
+    eval.mteb_benchmarks()
 
 
 def available_tasks(args: argparse.Namespace) -> None:
@@ -149,6 +172,18 @@ def available_tasks(args: argparse.Namespace) -> None:
     )
     eval = mteb.MTEB(tasks=tasks)
     eval.mteb_tasks()
+
+
+def add_benchmark_selection_args(parser: argparse.ArgumentParser) -> None:
+    """Adds arguments to the parser for filtering benchmarks by name."""
+    parser.add_argument(
+        "-b",
+        "--benchmarks",
+        nargs="+",
+        type=str,
+        default=None,
+        help="List of benchmark to be evaluated.",
+    )
 
 
 def add_task_selection_args(parser: argparse.ArgumentParser) -> None:
@@ -194,6 +229,15 @@ def add_available_tasks_parser(subparsers) -> None:
     parser.set_defaults(func=available_tasks)
 
 
+def add_available_benchmarks_parser(subparsers) -> None:
+    parser = subparsers.add_parser(
+        "available_benchmarks", help="List the available benchmarks within MTEB"
+    )
+    add_benchmark_selection_args(parser)
+
+    parser.set_defaults(func=available_benchmarks)
+
+
 def add_run_parser(subparsers) -> None:
     parser = subparsers.add_parser("run", help="Run a model on a set of tasks")
 
@@ -205,6 +249,7 @@ def add_run_parser(subparsers) -> None:
     )
 
     add_task_selection_args(parser)
+    add_benchmark_selection_args(parser)
 
     parser.add_argument(
         "--device", type=int, default=None, help="Device to use for computation"
@@ -249,145 +294,31 @@ def add_run_parser(subparsers) -> None:
         default=False,
         help="Overwrite the output file if it already exists",
     )
+    parser.add_argument(
+        "--save_predictions",
+        action="store_true",
+        default=False,
+        help="For retrieval tasks. Saves the predictions file in output_folder.",
+    )
 
     parser.set_defaults(func=run)
-
-
-def potentially_add_cqadupstack_to_results(results: list[mteb.MTEBResults]) -> None:
-    """If all CQADupstack tasks are present in the results, combine them into a single CQADupstackRetrieval task and add it to the results."""
-    TASK_LIST_CQA = {
-        "CQADupstackAndroidRetrieval",
-        "CQADupstackEnglishRetrieval",
-        "CQADupstackGamingRetrieval",
-        "CQADupstackGisRetrieval",
-        "CQADupstackMathematicaRetrieval",
-        "CQADupstackPhysicsRetrieval",
-        "CQADupstackProgrammersRetrieval",
-        "CQADupstackStatsRetrieval",
-        "CQADupstackTexRetrieval",
-        "CQADupstackUnixRetrieval",
-        "CQADupstackWebmastersRetrieval",
-        "CQADupstackWordpressRetrieval",
-    }
-
-    task_names = {result.task_name for result in results}
-
-    if not TASK_LIST_CQA.issubset(task_names):
-        return None
-    cqa_results = [result for result in results if result.task_name in TASK_LIST_CQA]
-
-    evaluation_time = sum([result.evaluation_time for result in cqa_results])
-    main_scores = [r.get_score(splits=["test"]) for r in cqa_results]
-    main_score = float(sum(main_scores) / len(main_scores))
-    scores = {
-        "test": [
-            {
-                "main_score": main_score,
-                "ndcg_at_10": main_score,
-                "hf_subset": "default",
-                "languages": ["eng_Latn"],
-            }
-        ]
-    }
-
-    result = mteb.MTEBResults(
-        task_name="CQADupstackRetrieval",
-        dataset_revision="CQADupstackRetrieval_is_a_combined_dataset",
-        mteb_version="NA",
-        scores=scores,
-        evaluation_time=evaluation_time,
-        kg_co2_emissions=None,
-    )
-    results.append(result)
 
 
 def create_meta(args: argparse.Namespace) -> None:
     results_folder = Path(args.results_folder)
     output_path = Path(args.output_path)
-
-    if output_path.exists() and args.overwrite:
+    overwrite = args.overwrite
+    from_existing = Path(args.from_existing) if args.from_existing else None
+    if output_path.exists() and overwrite:
         logger.warning("Output path already exists, overwriting.")
     elif output_path.exists():
         raise FileExistsError(
             "Output path already exists, use --overwrite to overwrite."
         )
 
-    json_files = [
-        r
-        for r in results_folder.glob("*.json")
-        if r.is_file() and r.name != "model_meta.json"
-    ]
-
-    task_results = [MTEBResults.from_disk(path) for path in json_files]
-    task_results = [
-        results
-        for results in task_results
-        if results.task_name not in ["GPUSpeedTask", "CPUSpeedTask"]
-    ]
-    potentially_add_cqadupstack_to_results(
-        task_results
-    )  # We should ideally find better way in the future to aggregate scores for tasks like CQADupstack
-    task_results = sorted(task_results, key=lambda x: x.task_name)
-
-    yaml_results = []
-    for task_result in task_results:
-        if (
-            task_result.task_name == "CQADupstackRetrieval"
-        ):  # CQADupstackRetrieval is a combined dataset (special case atm.)
-            task = CQADupstackRetrievalDummy()
-        else:
-            task = mteb.get_task(task_result.task_name)
-
-        for split, hf_subset_scores in task_result.scores.items():
-            for hf_subset_score in hf_subset_scores:
-                metrics = [
-                    {
-                        "type": k,
-                        "value": v
-                        * 100,  # convert to percentage (for consistency with the leaderboard and to make it more readable)
-                    }
-                    for k, v in hf_subset_score.items()
-                    if isinstance(v, (int, float))
-                ]
-                if task.metadata.main_score not in hf_subset_score:
-                    raise ValueError(
-                        f"Main score {task.metadata.main_score} not found in metrics or is not a number."
-                    )
-
-                yaml_result = {
-                    "task": {"type": task.metadata.type},
-                    "dataset": {
-                        "type": task.metadata.dataset["path"],
-                        "name": f"MTEB {task.metadata.name} ({hf_subset_score['hf_subset']})",
-                        "config": hf_subset_score["hf_subset"],
-                        "split": split,
-                        "revision": task_result.dataset_revision,
-                    },
-                    "metrics": metrics,
-                }
-                yaml_results.append(yaml_result)
-
-    model_name = "PLACEHOLDER"
-    # if model_meta.json exists, use the model name from there
-    if (results_folder / "model_meta.json").exists():
-        with (results_folder / "model_meta.json").open("r") as f:
-            model_meta = json.load(f)
-            model_name = model_meta["name"]
-
-    yaml_dict = {
-        "tags": ["mteb"],
-        "model-index": [
-            {
-                "name": model_name,
-                # should we add the revision here?
-                "results": yaml_results,
-            }
-        ],
-    }
+    frontmatter = generate_readme(results_folder, from_existing)
 
     with output_path.open("w") as f:
-        yaml_str = yaml.dump(yaml_dict)
-        frontmatter = "---\n" + yaml_str + "---\n"
         f.write(frontmatter)
 
 
@@ -413,6 +344,12 @@ def add_create_meta_parser(subparsers) -> None:
         default=False,
         help="Overwrite the output file if it already exists",
     )
+    parser.add_argument(
+        "--from_existing",
+        type=str,
+        required=False,
+        help="Merge results with existing README.md",
+    )
 
     parser.set_defaults(func=create_meta)
 
@@ -425,13 +362,14 @@ def main():
     )
     add_run_parser(subparsers)
     add_available_tasks_parser(subparsers)
+    add_available_benchmarks_parser(subparsers)
     add_create_meta_parser(subparsers)
 
     args = parser.parse_args()
 
     # If no subcommand is provided, default to run with a deprecation warning
     if not hasattr(args, "func"):
-        logger.warning(
+        warnings.warn(
             "Using `mteb` without a subcommand is deprecated. Use `mteb run` instead.",
             DeprecationWarning,
         )

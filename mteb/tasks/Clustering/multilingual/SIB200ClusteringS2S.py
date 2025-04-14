@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from datasets import Dataset, DatasetDict
 
-from mteb.abstasks import MultilingualTask
 from mteb.abstasks.AbsTaskClusteringFast import AbsTaskClusteringFast
+from mteb.abstasks.MultilingualTask import MultilingualTask
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
 _LANGS = {
@@ -243,18 +243,14 @@ class SIB200ClusteringFast(MultilingualTask, AbsTaskClusteringFast):
             journal={arXiv preprint arXiv:2309.07445},
             year={2023}
         }""",  # combined train, validation, and test into test.
-        descriptive_stats={
-            "n_samples": {"test": 1004},
-            "avg_character_length": {"test": 114.78},
-        },
     )
 
     def dataset_transform(self):
-        ds = dict()
+        ds = {}
         for lang in self.hf_subsets:
             labels = []
             sentences = []
-            ds[lang] = dict()
+            ds[lang] = {}
             for split in ["train", "validation", "test"]:
                 labels.extend(self.dataset[lang][split]["category"])
                 sentences.extend(self.dataset[lang][split]["text"])

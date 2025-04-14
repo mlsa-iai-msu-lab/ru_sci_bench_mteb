@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from mteb.abstasks import AbsTaskClassification
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
 
@@ -23,7 +23,7 @@ class DutchBookReviewSentimentClassification(AbsTaskClassification):
         main_score="accuracy",
         domains=["Reviews", "Written"],
         task_subtypes=["Sentiment/Hate speech"],
-        license="CC BY-NC-SA 4.0",
+        license="cc-by-nc-sa-4.0",
         annotations_creators="derived",
         dialect=[],
         sample_creation="found",
@@ -43,8 +43,4 @@ class DutchBookReviewSentimentClassification(AbsTaskClassification):
   bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 """,
-        descriptive_stats={
-            "n_samples": {"test": 2224},
-            "avg_character_length": {"test": 1443.0},
-        },
     )

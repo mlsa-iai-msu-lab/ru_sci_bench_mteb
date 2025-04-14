@@ -4,9 +4,8 @@ from typing import Any
 
 import datasets
 
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskClassification
 
 _LANGUAGES = {
     "asm_Beng": ["asm-Beng"],
@@ -81,7 +80,7 @@ class IndicLangClassification(AbsTaskClassification):
         date=("2022-08-01", "2023-01-01"),
         domains=["Web", "Non-fiction", "Written"],
         task_subtypes=["Language identification"],
-        license="CC0",
+        license="cc0-1.0",
         annotations_creators="expert-annotated",
         dialect=[],
         sample_creation="created",
@@ -102,10 +101,6 @@ class IndicLangClassification(AbsTaskClassification):
     doi = "10.18653/v1/2023.acl-short.71",
     pages = "816--826"
 }""",
-        descriptive_stats={
-            "n_samples": {"test": 30418},
-            "avg_character_length": {"test": 106.5},
-        },
     )
 
     def load_data(self, **kwargs: Any) -> None:
@@ -113,7 +108,7 @@ class IndicLangClassification(AbsTaskClassification):
         if self.data_loaded:
             return
 
-        labels = sorted(list(_LANGUAGES.keys()))
+        labels = sorted(_LANGUAGES.keys())
 
         data = datasets.load_dataset(**self.metadata_dict["dataset"])["train"]["data"][
             0

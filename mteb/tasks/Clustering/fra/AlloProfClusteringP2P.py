@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datasets
 import numpy as np
 
@@ -46,7 +48,6 @@ class AlloProfClusteringP2P(AbsTaskClustering):
   year = {2023},
   copyright = {Creative Commons Attribution Non Commercial Share Alike 4.0 International}
 }""",
-        descriptive_stats={"n_samples": None, "avg_character_length": None},
     )
 
     def create_description(self, example):
@@ -106,10 +107,7 @@ class AlloProfClusteringP2PFast(AbsTaskClusteringFast):
   copyright = {Creative Commons Attribution Non Commercial Share Alike 4.0 International}
 }
 """,
-        descriptive_stats={
-            "n_samples": {"test": 2556},
-            "avg_character_length": {"test": 3539.5},
-        },
+        adapted_from=["AlloProfClusteringP2P"],
     )
 
     def create_description(self, example):

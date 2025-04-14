@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from mteb.abstasks import TaskMetadata
 from mteb.abstasks.AbsTaskClusteringFast import AbsTaskClusteringFast
+from mteb.abstasks.TaskMetadata import TaskMetadata
 
 N_SAMPLES = 2048
 
@@ -31,21 +31,18 @@ class VGHierarchicalClusteringP2P(AbsTaskClusteringFast):
         main_score="v_measure",
         date=("2020-01-01", "2024-12-31"),  # best guess
         domains=["News", "Non-fiction", "Written"],
-        license="CC-BY-NC 4.0",
+        license="cc-by-nc-4.0",
         annotations_creators="derived",
         dialect=[],
         task_subtypes=["Thematic clustering"],
         sample_creation="found",
         bibtex_citation="""@mastersthesis{navjord2023beyond,
     title={Beyond extractive: advancing abstractive automatic text summarization in Norwegian with transformers},
-    author={Navjord, J{\o}rgen Johnsen and Korsvik, Jon-Mikkel Ryen},
+    author={Navjord, J{\\o}rgen Johnsen and Korsvik, Jon-Mikkel Ryen},
     year={2023},
-    school={Norwegian University of Life Sciences, {\AA}s}
+    school={Norwegian University of Life Sciences, {\\AA}s}
 }""",
-        descriptive_stats={
-            "n_samples": {"test": N_SAMPLES},
-            "avg_character_length": {"test": 2670.3243084794544},
-        },
+        prompt="Identify the categories (e.g. sports) of given articles in Norwegian",
     )
 
     def dataset_transform(self) -> None:
@@ -79,21 +76,18 @@ class VGHierarchicalClusteringS2S(AbsTaskClusteringFast):
         main_score="v_measure",
         date=("2020-01-01", "2024-12-31"),  # best guess
         domains=["News", "Non-fiction", "Written"],
-        license="CC-BY-NC 4.0",
+        license="cc-by-nc-4.0",
         annotations_creators="derived",
         dialect=[],
         task_subtypes=["Thematic clustering"],
         sample_creation="found",
         bibtex_citation="""@mastersthesis{navjord2023beyond,
     title={Beyond extractive: advancing abstractive automatic text summarization in Norwegian with transformers},
-    author={Navjord, J{\o}rgen Johnsen and Korsvik, Jon-Mikkel Ryen},
+    author={Navjord, J{\\o}rgen Johnsen and Korsvik, Jon-Mikkel Ryen},
     year={2023},
-    school={Norwegian University of Life Sciences, {\AA}s}
+    school={Norwegian University of Life Sciences, {\\AA}s}
 }""",
-        descriptive_stats={
-            "n_samples": {"test": N_SAMPLES},
-            "avg_character_length": {"test": 139.31247668283325},
-        },
+        prompt="Identify the categories (e.g. sports) of given articles in Norwegian",
     )
 
     def dataset_transform(self) -> None:

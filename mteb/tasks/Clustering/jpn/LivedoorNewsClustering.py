@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from mteb.abstasks.AbsTaskClusteringFast import AbsTaskClusteringFast
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
@@ -30,10 +32,7 @@ class LivedoorNewsClusteringv2(AbsTaskClusteringFast):
         dialect=[],
         sample_creation="found",
         bibtex_citation="",
-        descriptive_stats={
-            "n_samples": {"test": 1106},
-            "avg_character_length": {"test": 1082.61},
-        },
+        adapted_from=["LivedoorNewsClustering"],
     )
 
     def dataset_transform(self):
@@ -77,10 +76,6 @@ class LivedoorNewsClustering(AbsTaskClusteringFast):
         dialect=[],
         sample_creation="found",
         bibtex_citation="",
-        descriptive_stats={
-            "n_samples": {"test": 1107},
-            "avg_character_length": {"test": 1082.61},
-        },
     )
 
     def dataset_transform(self):

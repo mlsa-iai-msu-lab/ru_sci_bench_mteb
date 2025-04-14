@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskClassification
 
 
 class TweetSentimentExtractionClassification(AbsTaskClassification):
@@ -26,7 +25,7 @@ class TweetSentimentExtractionClassification(AbsTaskClassification):
         ),  # Estimated range for the collection of tweets
         domains=["Social", "Written"],
         task_subtypes=["Sentiment/Hate speech"],
-        license="Not specified",
+        license="not specified",
         annotations_creators="human-annotated",
         dialect=[],
         sample_creation="found",
@@ -37,15 +36,7 @@ class TweetSentimentExtractionClassification(AbsTaskClassification):
     year = {2020},
     url = {https://kaggle.com/competitions/tweet-sentiment-extraction}
 }""",
-        descriptive_stats={
-            "n_samples": {"test": 3534},
-            "avg_character_length": {"test": 67.8},
-        },
+        prompt="Classify the sentiment of a given tweet as either positive, negative, or neutral",
     )
 
-    @property
-    def metadata_dict(self) -> dict[str, str]:
-        metadata_dict = dict(self.metadata)
-        metadata_dict["n_experiments"] = 10
-        metadata_dict["samples_per_label"] = 32
-        return metadata_dict
+    samples_per_label = 32

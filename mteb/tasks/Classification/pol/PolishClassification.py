@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from mteb.abstasks.AbsTaskClassification import AbsTaskClassification
 from mteb.abstasks.TaskMetadata import TaskMetadata
-
-from ....abstasks import AbsTaskClassification
 
 
 class CbdClassification(AbsTaskClassification):
@@ -20,13 +19,13 @@ class CbdClassification(AbsTaskClassification):
         eval_splits=["test"],
         eval_langs=["pol-Latn"],
         main_score="accuracy",
-        date=None,
-        domains=None,
-        task_subtypes=None,
-        license=None,
-        annotations_creators=None,
-        dialect=None,
-        sample_creation=None,
+        date=("2019-01-01", "2019-12-31"),  # best guess: based on publication date
+        domains=["Written", "Social"],
+        task_subtypes=["Sentiment/Hate speech"],
+        license="bsd-3-clause",
+        annotations_creators="human-annotated",  # guess
+        dialect=[],
+        sample_creation="found",
         bibtex_citation="""@proceedings{ogr:kob:19:poleval,
   editor    = {Maciej Ogrodniczuk and Łukasz Kobyliński},
   title     = {{Proceedings of the PolEval 2019 Workshop}},
@@ -36,10 +35,6 @@ class CbdClassification(AbsTaskClassification):
   url       = {http://2019.poleval.pl/files/poleval2019.pdf},
   isbn      = "978-83-63159-28-3"}
 }""",
-        descriptive_stats={
-            "n_samples": {"test": 1000},
-            "avg_character_length": {"test": 93.2},
-        },
     )
 
 
@@ -47,7 +42,7 @@ class PolEmo2InClassification(AbsTaskClassification):
     metadata = TaskMetadata(
         name="PolEmo2.0-IN",
         description="A collection of Polish online reviews from four domains: medicine, hotels, products and "
-        "school. The PolEmo2.0-IN task is to predict the sentiment of in-domain (medicine and hotels) reviews.",
+        + "school. The PolEmo2.0-IN task is to predict the sentiment of in-domain (medicine and hotels) reviews.",
         reference="https://aclanthology.org/K19-1092.pdf",
         dataset={
             "path": "PL-MTEB/polemo2_in",
@@ -59,13 +54,13 @@ class PolEmo2InClassification(AbsTaskClassification):
         eval_splits=["test"],
         eval_langs=["pol-Latn"],
         main_score="accuracy",
-        date=None,
-        domains=None,
-        task_subtypes=None,
-        license=None,
-        annotations_creators=None,
-        dialect=None,
-        sample_creation=None,
+        date=("2004-01-01", "2019-05-30"),  # based on plot in paper
+        domains=["Written", "Social"],
+        task_subtypes=["Sentiment/Hate speech"],
+        license="cc-by-sa-4.0",
+        annotations_creators="derived",
+        dialect=[],
+        sample_creation="found",
         bibtex_citation="""@inproceedings{kocon-etal-2019-multi,
     title = "Multi-Level Sentiment Analysis of {P}ol{E}mo 2.0: Extended Corpus of Multi-Domain Consumer Reviews",
     author = "Koco{\'n}, Jan  and
@@ -81,7 +76,6 @@ class PolEmo2InClassification(AbsTaskClassification):
     pages = "980--991",
     abstract = "In this article we present an extended version of PolEmo {--} a corpus of consumer reviews from 4 domains: medicine, hotels, products and school. Current version (PolEmo 2.0) contains 8,216 reviews having 57,466 sentences. Each text and sentence was manually annotated with sentiment in 2+1 scheme, which gives a total of 197,046 annotations. We obtained a high value of Positive Specific Agreement, which is 0.91 for texts and 0.88 for sentences. PolEmo 2.0 is publicly available under a Creative Commons copyright license. We explored recent deep learning approaches for the recognition of sentiment, such as Bi-directional Long Short-Term Memory (BiLSTM) and Bidirectional Encoder Representations from Transformers (BERT).",
 }""",
-        descriptive_stats={"n_samples": None, "avg_character_length": None},
     )
 
 
@@ -89,8 +83,8 @@ class PolEmo2OutClassification(AbsTaskClassification):
     metadata = TaskMetadata(
         name="PolEmo2.0-OUT",
         description="A collection of Polish online reviews from four domains: medicine, hotels, products and "
-        "school. The PolEmo2.0-OUT task is to predict the sentiment of out-of-domain (products and "
-        "school) reviews using models train on reviews from medicine and hotels domains.",
+        + "school. The PolEmo2.0-OUT task is to predict the sentiment of out-of-domain (products and "
+        + "school) reviews using models train on reviews from medicine and hotels domains.",
         reference="https://aclanthology.org/K19-1092.pdf",
         dataset={
             "path": "PL-MTEB/polemo2_out",
@@ -102,18 +96,14 @@ class PolEmo2OutClassification(AbsTaskClassification):
         eval_splits=["test"],
         eval_langs=["pol-Latn"],
         main_score="accuracy",
-        date=None,
-        domains=None,
-        task_subtypes=None,
-        license=None,
+        date=("2004-01-01", "2019-05-30"),  # based on plot in paper
+        domains=["Written", "Social"],
+        task_subtypes=["Sentiment/Hate speech"],
+        license="cc-by-sa-4.0",
         annotations_creators=None,
         dialect=None,
         sample_creation=None,
         bibtex_citation=None,
-        descriptive_stats={
-            "n_samples": {"test": 722},
-            "avg_character_length": {"test": 756.2},
-        },
     )
 
 
@@ -140,10 +130,6 @@ class AllegroReviewsClassification(AbsTaskClassification):
         dialect=None,
         sample_creation=None,
         bibtex_citation=None,
-        descriptive_stats={
-            "n_samples": {"test": 1006},
-            "avg_character_length": {"test": 477.2},
-        },
     )
 
 
@@ -163,16 +149,20 @@ class PacClassification(AbsTaskClassification):
         eval_splits=["test"],
         eval_langs=["pol-Latn"],
         main_score="accuracy",
-        date=None,
-        domains=None,
-        task_subtypes=None,
-        license=None,
+        date=("2021-01-01", "2021-12-31"),  # best guess: based on publication date
+        domains=["Legal", "Written"],
+        task_subtypes=[],
+        license="cc-by-nc-sa-4.0",
         annotations_creators=None,
-        dialect=None,
+        dialect=[],
         sample_creation=None,
-        bibtex_citation=None,
-        descriptive_stats={
-            "n_samples": {"test": 3453},
-            "avg_character_length": {"test": 185.3},
-        },
+        bibtex_citation="""@misc{augustyniak2022waydesigningcompilinglepiszcze,
+      title={This is the way: designing and compiling LEPISZCZE, a comprehensive NLP benchmark for Polish},
+      author={Łukasz Augustyniak and Kamil Tagowski and Albert Sawczyn and Denis Janiak and Roman Bartusiak and Adrian Szymczak and Marcin Wątroba and Arkadiusz Janz and Piotr Szymański and Mikołaj Morzy and Tomasz Kajdanowicz and Maciej Piasecki},
+      year={2022},
+      eprint={2211.13112},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2211.13112},
+}""",
     )

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datasets import load_dataset
 
 from mteb.abstasks.TaskMetadata import TaskMetadata
@@ -16,10 +18,10 @@ class FaithDialRetrieval(AbsTaskRetrieval):
         reference="https://mcgill-nlp.github.io/FaithDial",
         description=(
             "FaithDial is a faithful knowledge-grounded dialogue benchmark."
-            "It was curated by asking annotators to amend hallucinated utterances in Wizard of Wikipedia (WoW)."
-            "It consists of conversation histories along with manually labelled relevant passage."
-            "For the purpose of retrieval, we only consider the instances marked as 'Edification' in the VRM field,"
-            "as the gold passage associated with these instances is non-ambiguous."
+            + "It was curated by asking annotators to amend hallucinated utterances in Wizard of Wikipedia (WoW). "
+            + "It consists of conversation histories along with manually labelled relevant passage. "
+            + "For the purpose of retrieval, we only consider the instances marked as 'Edification' in the VRM field, "
+            + "as the gold passage associated with these instances is non-ambiguous."
         ),
         type="Retrieval",
         category="s2p",
@@ -47,18 +49,6 @@ class FaithDialRetrieval(AbsTaskRetrieval):
             doi={10.1162/tacl_a_00529}
             }
         """,
-        descriptive_stats={
-            "n_samples": {"test": 2042},
-            "avg_character_length": {
-                "test": {
-                    "average_document_length": 140.61062447018932,
-                    "average_query_length": 4.926542605288932,
-                    "num_documents": 3539,
-                    "num_queries": 2042,
-                    "average_relevant_docs_per_query": 1.0,
-                }
-            },
-        },
     )
 
     # TODO: Will be removed if curated and added to mteb HF

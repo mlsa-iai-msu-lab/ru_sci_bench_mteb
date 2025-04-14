@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from mteb.abstasks import MultilingualTask
 from mteb.abstasks.AbsTaskPairClassification import AbsTaskPairClassification
+from mteb.abstasks.MultilingualTask import MultilingualTask
 from mteb.abstasks.TaskMetadata import TaskMetadata
 
 _LANGS = {
@@ -40,7 +40,7 @@ class XNLI(MultilingualTask, AbsTaskPairClassification):
         date=("2018-01-01", "2018-11-04"),
         domains=["Non-fiction", "Fiction", "Government", "Written"],
         task_subtypes=[],
-        license="Not specified",
+        license="not specified",
         annotations_creators="expert-annotated",
         dialect=[],
         sample_creation="created",
@@ -60,10 +60,6 @@ class XNLI(MultilingualTask, AbsTaskPairClassification):
         location = {Brussels, Belgium},
         }
         """,
-        descriptive_stats={
-            "n_samples": {"validation": 2163, "test": 2460},
-            "avg_character_length": {"validation": 106.5, "test": 106.5},
-        },
     )
 
     def dataset_transform(self):
@@ -131,7 +127,7 @@ class XNLIV2(MultilingualTask, AbsTaskPairClassification):
         date=("2018-01-01", "2018-11-04"),
         domains=["Non-fiction", "Fiction", "Government", "Written"],
         task_subtypes=[],
-        license="Not specified",
+        license="not specified",
         annotations_creators="expert-annotated",
         dialect=[],
         sample_creation="machine-translated and verified",
@@ -144,10 +140,7 @@ class XNLIV2(MultilingualTask, AbsTaskPairClassification):
             organization={IEEE}
             }
         """,
-        descriptive_stats={
-            "n_samples": {"test": 5010},
-            "avg_character_length": {"test": 80.06},
-        },  # average of premise and hypothesis
+        # average of premise and hypothesis
     )
 
     def dataset_transform(self):

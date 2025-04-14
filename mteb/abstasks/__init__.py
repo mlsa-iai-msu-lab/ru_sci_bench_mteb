@@ -14,4 +14,12 @@ from .AbsTaskRetrieval import *
 from .AbsTaskSpeedTask import *
 from .AbsTaskSTS import *
 from .AbsTaskSummarization import *
+from .Image.AbsTaskAny2AnyMultiChoice import *
+from .Image.AbsTaskAny2AnyRetrieval import *
+from .Image.AbsTaskImageClassification import *
+from .Image.AbsTaskImageClustering import *
+from .Image.AbsTaskImageMultilabelClassification import *
+from .Image.AbsTaskImageTextPairClassification import *
+from .Image.AbsTaskVisualSTS import *
+from .Image.AbsTaskZeroShotClassification import *
 from .MultilingualTask import *
