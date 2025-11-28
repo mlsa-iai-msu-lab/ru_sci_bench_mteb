@@ -45,3 +45,37 @@ class RuSciBenchBitextMining(AbsTaskBitextMining):
 """,
         prompt="Given the following title and abstract of the scientific article, find its translation",
     )
+
+
+class RuSciBenchZhoBitextMining(AbsTaskBitextMining):
+    metadata = TaskMetadata(
+        name="RuSciBenchZhoBitextMining",
+        dataset={
+            "path": "mlsa-iai-msu-lab/ru_sci_bench_zho_bitext_mining",
+            "revision": "4733c3c1516568a6044f24092fe8c9f6ff8cb070",
+        },
+        description="Science China bitext mining dataset with Chinese-English and Chinese-Russian scientific abstract pairs",
+        prompt={
+            "query": "Represent the Chinese scientific abstract for retrieving its translation",
+            "document": "Represent the translated scientific abstract for retrieval given a Chinese query",
+        },
+        reference="https://huggingface.co/datasets/vatolinalex/sciencechina_bitext_mining",
+        type="BitextMining",
+        category="t2t",
+        modalities=["text"],
+        eval_splits=["test"],
+        eval_langs={
+            "zh-en": ["cmn-Hans", "eng-Latn"],
+            "zh-ru": ["cmn-Hans", "rus-Cyrl"],
+        },
+        main_score="f1",
+        date=("2020-01-01", "2024-12-31"),
+        domains=["Academic"],
+        task_subtypes=[],
+        license="not specified",
+        annotations_creators="derived",
+        dialect=[],
+        sample_creation="found",
+        bibtex_citation="",
+        superseded_by=None,
+    )

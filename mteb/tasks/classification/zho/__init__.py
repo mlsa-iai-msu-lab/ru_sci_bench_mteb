@@ -11,6 +11,9 @@ from .cmteb_classification import (
     Waimai,
     WaimaiV2,
 )
+from .ru_sci_bench_classification import (
+    RuSciBenchZhoClassification,
+)
 from .yue_openrice_review_classification import (
     YueOpenriceReviewClassification,
     YueOpenriceReviewClassificationV2,
@@ -24,6 +27,7 @@ __all__ = [
     "MultilingualSentiment",
     "MultilingualSentimentV2",
     "OnlineShopping",
+    "RuSciBenchZhoClassification",
     "TNews",
     "TNewsV2",
     "Waimai",
